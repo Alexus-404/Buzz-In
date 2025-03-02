@@ -19,8 +19,8 @@ firebase_credentials = json.loads(os.getenv('FIREBASE_CREDENTIALS'))
 cred = credentials.Certificate(firebase_credentials)
 fb_app = firebase_admin.initialize_app(cred, {'databaseURL' : os.getenv('FIREBASE_DATABASE_URL')})
 
-from callHandler import inbound_call
-from invalidateExpired import invalidate_expired
+from server.callHandler import inbound_call
+from server.invalidateExpired import invalidate_expired
 
 #inbound calls
 @flsk_app.route('/call', methods=["POST"])
