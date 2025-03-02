@@ -13,3 +13,6 @@ venv/
 # IDE files (VSCode, etc.)
 .vscode/
 .idea/
+
+.env
+*.env
