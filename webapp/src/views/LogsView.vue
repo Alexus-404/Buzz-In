@@ -1,26 +1,25 @@
 <script setup>
-import { getCalls } from '@/services/callLogService'
-import { ref, onMounted } from 'vue';
+import { getCalls } from "@/services/callLogService";
+import { ref, onMounted } from "vue";
 
-const callLog = ref()
-const dt = ref()
-let isLoaded = false
+const callLog = ref();
+const dt = ref();
+let isLoaded = false;
 
 const refreshCallLog = async () => {
-  callLog.value = await getCalls()
-}
+  callLog.value = await getCalls();
+};
 
 const exportCSV = () => {
-  dt.value.exportCSV()
-}
+  dt.value.exportCSV();
+};
 
 onMounted(async () => {
   if (!isLoaded) {
-    refreshCallLog()
-    isLoaded = true
+    refreshCallLog();
+    isLoaded = true;
   }
-})
-
+});
 </script>
 
 <template>
@@ -37,7 +36,11 @@ onMounted(async () => {
           <span class="text-xl text-900 font-bold">Recent Calls</span>
         </div>
         <div class="text-end pb-4">
-            <Button icon="pi pi-external-link" label="Export" @click="exportCSV($event)" />
+          <Button
+            icon="pi pi-external-link"
+            label="Export"
+            @click="exportCSV($event)"
+          />
         </div>
       </template>
       <Column field="time" header="Time"></Column>

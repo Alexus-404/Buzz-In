@@ -5,7 +5,7 @@ import { useRouter } from "vue-router";
 import { auth } from "@/firebase"; //TODO: Change to airbnb auth
 import { useLayout } from "@/composables/layout";
 
-const {toggleMenu} = useLayout()
+const { toggleMenu } = useLayout();
 
 const router = useRouter();
 const currentRouteName = computed(() => {
@@ -19,26 +19,25 @@ const notifMenu = ref();
 const pfpMenu = ref();
 const accOptions = ref([
   {
-    label : 'Account Info',
+    label: "Account Info",
     command: () => {
-      router.push({name : 'Account'})
-    }
+      router.push({ name: "Account" });
+    },
   },
   {
-    label : 'Security',
+    label: "Security",
     command: () => {
-      router.push({name : 'Security'})
-    }
-  }
+      router.push({ name: "Security" });
+    },
+  },
 ]);
 
 const notifToggle = (event) => {
   notifMenu.value.toggle(event);
-}
+};
 const pfpToggle = (event) => {
   pfpMenu.value.toggle(event);
-}
-
+};
 </script>
 
 <template>
@@ -53,8 +52,16 @@ const pfpToggle = (event) => {
 
     <!-- Buttons -->
     <div class="flex justify-end items-center px-10 space-x-2">
-      <Button icon="pi pi-bell" text rounded class="text-primary" aria-haspopup="true" aria-controls="overlay_menu1" @click="notifToggle"/>
-      <Menu ref="notifMenu" id="overlay_menu1" :popup="true"/>
+      <Button
+        icon="pi pi-bell"
+        text
+        rounded
+        class="text-primary"
+        aria-haspopup="true"
+        aria-controls="overlay_menu1"
+        @click="notifToggle"
+      />
+      <Menu ref="notifMenu" id="overlay_menu1" :popup="true" />
 
       <Avatar
         :image="userProfileUrl"

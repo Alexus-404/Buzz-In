@@ -22,6 +22,6 @@ const menuOptions = ref([
 
 <template>
   <div class="w-[25%] h-full bg-surface border-r flex">
-    <Menu :model="menuOptions" class="flex-grow"/>
+    <Menu :model="menuOptions" class="flex-grow" />
   </div>
 </template>

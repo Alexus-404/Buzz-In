@@ -26,9 +26,12 @@
     "@vue/cli-plugin-eslint": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.21.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^9.32.0",
     "postcss": "^8.5.3",
+    "prettier": "^2.4.1",
     "tailwind": "^4.0.0",
     "tailwindcss": "^4.0.9"
   },
@@ -39,7 +42,8 @@
     },
     "extends": [
       "plugin:vue/vue3-essential",
-      "eslint:recommended"
+      "eslint:recommended",
+      "plugin:prettier/recommended"
     ],
     "parserOptions": {
       "parser": "@babel/eslint-parser"

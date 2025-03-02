@@ -1,66 +1,66 @@
-import AppLayout from '@/layout/AppLayout.vue'
-import { createWebHistory, createRouter } from 'vue-router'
-import { auth } from '../firebase';
-import AccountLayout from '@/layout/AccountLayout.vue';
+import AppLayout from "@/layout/AppLayout.vue";
+import { createWebHistory, createRouter } from "vue-router";
+import { auth } from "../firebase";
+import AccountLayout from "@/layout/AccountLayout.vue";
 
 const routes = [
   {
-    path: '/',
+    path: "/",
     component: AppLayout,
     children: [
       {
-        path: '/',
-        name: 'Dashboard',
-        component: () => import('../views/HomeView.vue')
+        path: "/",
+        name: "Dashboard",
+        component: () => import("../views/HomeView.vue"),
       },
       {
-        path: '/logs',
-        name: 'Logs',
-        component: () => import('../views/LogsView.vue')
+        path: "/logs",
+        name: "Logs",
+        component: () => import("../views/LogsView.vue"),
       },
       {
-        path: '/properties',
-        name: 'Properties',
-        component: () => import('../views/PropertiesView.vue')
+        path: "/properties",
+        name: "Properties",
+        component: () => import("../views/PropertiesView.vue"),
       },
       {
-        path: '/account',
+        path: "/account",
         component: AccountLayout,
         children: [
           {
-            path: '/account',
-            name: 'Account',
-            component: () => import('../views/PropertiesView.vue')
+            path: "/account",
+            name: "Account",
+            component: () => import("../views/PropertiesView.vue"),
           },
           {
-            path: '/account/security',
-            name: 'Security',
-            component: () => import('../views/PropertiesView.vue')
-          }
-        ]
-      }
+            path: "/account/security",
+            name: "Security",
+            component: () => import("../views/PropertiesView.vue"),
+          },
+        ],
+      },
     ],
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/login',
-    name: 'Login',
-    component: () => import('../views/LoginView.vue')
+    path: "/login",
+    name: "Login",
+    component: () => import("../views/LoginView.vue"),
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 
 router.beforeEach((to, from, next) => {
   const user = auth.currentUser;
-  if (to.matched.some(record => record.meta.requiresAuth) && !user) {
-    next('/login');
+  if (to.matched.some((record) => record.meta.requiresAuth) && !user) {
+    next("/login");
   } else {
     next();
   }
-})
+});
 
-export default router
+export default router;

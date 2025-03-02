@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { auth, db, ref as fbRef, set } from "@/firebase";
-import { remove } from 'firebase/database'
+import { remove } from "firebase/database";
 import { getProperties } from "@/services/propertyService";
 
 const properties = ref({});
@@ -51,8 +51,8 @@ const openProperty = (currentProperty = {}) => {
 };
 
 const formatPhoneNumber = (phone) => {
-  return phone.replace(/\D/g, "")
-}
+  return phone.replace(/\D/g, "");
+};
 
 const onSubmitProperty = async ({ valid }) => {
   if (!valid) {
@@ -63,7 +63,10 @@ const onSubmitProperty = async ({ valid }) => {
   let number = formValues.number;
   formValues.number = null;
 
-  const propertyRef = fbRef(db, pathToUser + "/Properties/" + formatPhoneNumber(number));
+  const propertyRef = fbRef(
+    db,
+    pathToUser + "/Properties/" + formatPhoneNumber(number)
+  );
 
   try {
     await set(propertyRef, formValues);
@@ -87,7 +90,6 @@ onMounted(() => {
     isLoaded = true;
   }
 });
-
 </script>
 
 <template>
@@ -176,7 +178,12 @@ onMounted(() => {
       </div>
       <div class="flex flex-col gap-1">
         <label for="number" class="block font-bold mb-3">Phone Number</label>
-        <InputMask name="number" mask="+9 (999) 999-9999" placeholder="+1 (999) 999-9999" fluid />
+        <InputMask
+          name="number"
+          mask="+9 (999) 999-9999"
+          placeholder="+1 (999) 999-9999"
+          fluid
+        />
         <Message
           v-if="$form?.number?.invalid"
           severity="error"

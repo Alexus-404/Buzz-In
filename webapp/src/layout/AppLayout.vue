@@ -16,7 +16,7 @@ const { loading } = useUserData();
   </nav>
 
   <!-- Wrapper for Body -->
-  <div class="pt-[50px]"> 
+  <div class="pt-[50px]">
     <!-- Side Bar-->
     <aside class="h-full fixed">
       <app-menu />
