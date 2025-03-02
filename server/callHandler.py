@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 import pytz
 
-client = Client(os.getenv('ACCOUNT_SID'), os.getenv('AUTH_TOKEN'))
+client = Client(os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
 
 permittedNumbersRef = db.reference('/permittedNumbers')
 

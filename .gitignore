@@ -1,1 +1,15 @@
+# Node.js dependencies
+node_modules/
+
+# Python virtual environments
 venv/
+
+# System-specific files
+.DS_Store
+
+# Logs
+*.log
+
+# IDE files (VSCode, etc.)
+.vscode/
+.idea/

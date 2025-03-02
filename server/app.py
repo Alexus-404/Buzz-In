@@ -4,21 +4,20 @@ Purpose of the app file:
 - Reroute twilio calls + handle call logging and authorized access
 """
 
+import firebase_admin, os, json
 from flask import Flask, request
-import firebase_admin
 from firebase_admin import credentials
 from dotenv import load_dotenv
-import os
 
-load_dotenv('./.flaskenv')
 load_dotenv()
 
 flsk_app = Flask(__name__)
 flsk_app.secret_key = os.getenv('SECRET_KEY')
 
 # Firebase Admin SDK setup
-cred = credentials.Certificate("firebase-auth.json")
-fb_app = firebase_admin.initialize_app(cred, {'databaseURL' : "https://buzz-in-328b3-default-rtdb.firebaseio.com/"})
+firebase_credentials = json.loads(os.getenv('FIREBASE_CREDENTIALS'))
+cred = credentials.Certificate(firebase_credentials)
+fb_app = firebase_admin.initialize_app(cred, {'databaseURL' : os.getenv('FIREBASE_DATABASE_URL')})
 
 from callHandler import inbound_call
 from invalidateExpired import invalidate_expired
