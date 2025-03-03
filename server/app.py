@@ -28,7 +28,7 @@ def handle_call():
     return inbound_call()
 
 #remove expired
-@flsk_app.route('/invalidate-expired', methods=["POST"])
+@flsk_app.route('/invalidate-expired')
 def handle_expired():
     return invalidate_expired()
 
