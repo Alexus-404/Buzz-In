@@ -1,9 +1,12 @@
+import "./assets/styles/tailwind.css";
+import "primeicons/primeicons.css";
+
 import { createApp } from "vue";
 import router from "./router/router.js";
 import App from "./App.vue";
 
-import "primeicons/primeicons.css";
 import "./firebase.js";
+import Theme from "./assets/themes/theme.js";
 
 import PrimeVue from "primevue/config";
 import {
@@ -22,10 +25,6 @@ import {
   InputNumber,
 } from "primevue";
 import { Form } from "@primevue/forms";
-
-import Theme from "./assets/themes/theme.js";
-
-import "./assets/styles/tailwind.css";
 
 const app = createApp(App)
   .use(router)
