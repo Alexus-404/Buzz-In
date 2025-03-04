@@ -31,7 +31,10 @@ def inbound_call():
     #TODO: optimize algo later
     check_in = get_check_in(userId)
     response.say(f"You are {f'on time, ' + check_in['name'] if check_in else 'not on time'}.")
-    response.say(f"You are {'not' if ( not check_in) else ''} granted access")
+    response.say(f"You are {'not' if (not check_in) else ''} granted access")
+
+    if (check_in):
+        open_door(userId, response)
 
     record_call(userId, check_in != None)
         
@@ -53,6 +56,15 @@ def get_check_in(userId : str):
         if (check_in['number'] == incomingNumber
         and diff_in_s < GRACE_TIME):
             return check_in
+        
+def open_door(userId : str, response):
+    properties = db.reference(f"/users/{userId}/Properties").get()
+    incomingNumber = request.form["From"]
+
+    property = properties[incomingNumber]
+    if (property): #allow access by inputting corresponding dial tone
+        response.play(digits=property["dtmf"])
+        response.say(f"Played {property["dtmf"]} key.")
 
 
 def record_call(userId : str, success : bool):
