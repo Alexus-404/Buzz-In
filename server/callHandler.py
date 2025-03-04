@@ -54,6 +54,7 @@ def get_check_in(userId: str):
         time = int(check_in.get("time", 0)) / 1000.0
         checkInTime = datetime.fromtimestamp(time, tz)
         diff_in_s = (now - checkInTime).total_seconds()
+        print(diff_in_s)
 
         if check_in.get("property") == incomingNumber and diff_in_s < GRACE_TIME:
             return check_in
@@ -65,8 +66,8 @@ def open_door(userId: str, response):
 
     property = properties.get(incomingNumber)
     if property:
-        response.play(digits=property["dtmf"])
-        response.say(f"Played {property['dtmf']} key.")
+        response.play(digits=property["dtmf"] or 6)
+        response.say(f"Played {property['dtmf'] or 6} key.")
 
 def record_call(userId: str, success: bool):
     properties = db.reference(f"/users/{userId}/Properties").get() or {}
