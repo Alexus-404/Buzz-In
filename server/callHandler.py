@@ -54,7 +54,8 @@ def get_check_in(userId: str):
         time = int(check_in.get("time", 0)) / 1000.0
         checkInTime = datetime.fromtimestamp(time, tz)
         diff_in_s = (now - checkInTime).total_seconds()
-        print(diff_in_s)
+
+        print(incomingNumber, check_in.get("property"))
 
         if check_in.get("property") == incomingNumber and diff_in_s < GRACE_TIME:
             return check_in
