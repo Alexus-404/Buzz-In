@@ -23,6 +23,8 @@ def inbound_call():
 
     permittedNumbers = permittedNumbersRef.get() or {}
 
+    print(permittedNumbers, incomingNumber)
+    
     response = VoiceResponse()
 
     if incomingNumber not in permittedNumbers:
