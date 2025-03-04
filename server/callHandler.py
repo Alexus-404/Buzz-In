@@ -12,68 +12,68 @@ client = Client(os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
 
 permittedNumbersRef = db.reference('/permittedNumbers')
 
-GRACE_TIME = 2 * 3600 #hrs * secs
+GRACE_TIME = 2 * 3600  # hrs * secs
 tz = pytz.timezone("UTC")
 
 def inbound_call():
-    # identify caller
-    incomingNumber = request.form["From"]
+    incomingNumber = request.form.get("From", "")
+    if not incomingNumber:
+        return "Error: Incoming number not provided.", 400
 
-    permittedNumbers = permittedNumbersRef.get()
+    permittedNumbers = permittedNumbersRef.get() or {}
 
     response = VoiceResponse()
 
-    if not (incomingNumber in permittedNumbers):
-        response.reject(reason="not permitted.")
-        return
-        
+    if incomingNumber not in permittedNumbers:
+        response.reject(reason="Not permitted.")
+        return str(response)
+
     userId = permittedNumbers[incomingNumber]
-    #TODO: optimize algo later
+
     check_in = get_check_in(userId)
     response.say(f"You are {f'on time, ' + check_in['name'] if check_in else 'not on time'}.")
-    response.say(f"You are {'not' if (not check_in) else ''} granted access")
+    response.say(f"You are {'not' if not check_in else ''} granted access.")
 
-    if (check_in):
+    if check_in:
         open_door(userId, response)
 
-    record_call(userId, check_in != None)
-        
+    record_call(userId, check_in is not None)
+
     return str(response)
 
-def get_check_in(userId : str):
-    now = datetime.now(tz) #set to universal standard time
+def get_check_in(userId: str):
+    now = datetime.now(tz)
+    incomingNumber = request.form.get("From", "")
 
-    incomingNumber = request.form["From"]
-
-    checkIns = db.reference(f"/users/{userId}/CheckIns").get()
+    checkIns = db.reference(f"/users/{userId}/CheckIns").get() or {}
 
     for check_in in checkIns.values():
-        time = int(check_in["time"]) / 1000.0
-        
+        time = int(check_in.get("time", 0)) / 1000.0
         checkInTime = datetime.fromtimestamp(time, tz)
         diff_in_s = (now - checkInTime).total_seconds()
 
-        if (check_in['number'] == incomingNumber
-        and diff_in_s < GRACE_TIME):
+        if check_in.get("number") == incomingNumber and diff_in_s < GRACE_TIME:
             return check_in
-        
-def open_door(userId : str, response):
-    properties = db.reference(f"/users/{userId}/Properties").get()
-    incomingNumber = request.form["From"]
+    return None
 
-    property = properties[incomingNumber]
-    if (property): #allow access by inputting corresponding dial tone
+def open_door(userId: str, response):
+    properties = db.reference(f"/users/{userId}/Properties").get() or {}
+    incomingNumber = request.form.get("From", "")
+
+    property = properties.get(incomingNumber)
+    if property:
         response.play(digits=property["dtmf"])
-        response.say(f"Played {property["dtmf"]} key.")
+        response.say(f"Played {property['dtmf']} key.")
 
-
-def record_call(userId : str, success : bool):
-    properties = db.reference(f"/users/{userId}/Properties").get()
+def record_call(userId: str, success: bool):
+    properties = db.reference(f"/users/{userId}/Properties").get() or {}
     dt = round(datetime.now(tz).timestamp())
+
+    caller_id = str(request.form.get("From", ""))[1:]
+    property_info = properties.get(caller_id, {})
 
     callLogRef = db.reference(f"/users/{userId}/CallLog/{dt}")
     callLogRef.set({
-        "property": properties[str(request.form["From"])[1:]],
-        "success" : success
+        "property": property_info,
+        "success": success
     })
-
