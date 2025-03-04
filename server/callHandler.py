@@ -24,7 +24,7 @@ def inbound_call():
     permittedNumbers = permittedNumbersRef.get() or {}
 
     print(permittedNumbers, incomingNumber)
-    
+
     response = VoiceResponse()
 
     if incomingNumber not in permittedNumbers:
@@ -55,7 +55,7 @@ def get_check_in(userId: str):
         checkInTime = datetime.fromtimestamp(time, tz)
         diff_in_s = (now - checkInTime).total_seconds()
 
-        if check_in.get("number") == incomingNumber and diff_in_s < GRACE_TIME:
+        if check_in.get("property") == incomingNumber and diff_in_s < GRACE_TIME:
             return check_in
     return None
 
