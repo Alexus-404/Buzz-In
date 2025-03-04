@@ -17,6 +17,7 @@ tz = pytz.timezone("UTC")
 
 def inbound_call():
     incomingNumber = request.form.get("From", "")
+    incomingNumber = '+' + incomingNumber
     if not incomingNumber:
         return "Error: Incoming number not provided.", 400
 
