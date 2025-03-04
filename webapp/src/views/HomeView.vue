@@ -113,6 +113,10 @@ const onFilterSubmit = async ({ valid }) => {
   filterDialog.value = false;
 };
 
+const formatPhoneNumber = (phone) => {
+  return phone.replace(/\D/g, "");
+};
+
 const onCheckInSubmit = async ({ valid }) => {
   if (!valid) {
     return;
@@ -123,7 +127,7 @@ const onCheckInSubmit = async ({ valid }) => {
 
   //transform values
   formValues.time = formValues.time.getTime();
-  formValues.property = formValues.property.number;
+  formValues.property = formatPhoneNumber(formValues.property.number);
 
   if (id != "") {
     //edit
