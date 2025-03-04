@@ -47,6 +47,7 @@ def inbound_call():
 def get_check_in(userId: str):
     now = datetime.now(tz)
     incomingNumber = request.form.get("From", "")[1:]
+    incomingNumber = "".join(filter(str.isdigit, incomingNumber))
 
     checkIns = db.reference(f"/users/{userId}/CheckIns").get() or {}
 
@@ -64,6 +65,7 @@ def get_check_in(userId: str):
 def open_door(userId: str, response):
     properties = db.reference(f"/users/{userId}/Properties").get() or {}
     incomingNumber = request.form.get("From", "")[1:]
+    incomingNumber = "".join(filter(str.isdigit, incomingNumber))
 
     property = properties.get(incomingNumber)
     if property:
