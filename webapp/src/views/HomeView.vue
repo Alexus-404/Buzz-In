@@ -1,21 +1,20 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useCheckIns } from "@/composables/useCheckIn";
-import { useProperties } from "@/services/propertyService";
-import {Question} from "@/services/question"
+import { ref, onMounted } from "vue"
 import {z} from 'zod'
-import CheckInTable from "@/components/CheckInTable.vue";
-import CheckInDialog from "@/components/CheckInDialog.vue";
+import {Question} from "@/services/question"
+import { useCheckIns } from "@/composables/useCheckIn"
+import { useProperties } from "@/composables/useProperties"
+import CheckInTable from "@/components/CheckInTable.vue"
+import SmartDialog from "@/components/SmartDialog.vue"
 
-const {queryFilters, checkIns, refreshQuery, deleteCheckIn, editCheckIn, createCheckIn} = useCheckIns()
-const {getProperties} = useProperties()
+const {queryFilters, columns, orderOptions, checkIns, refreshQuery, deleteCheckIn, editCheckIn, createCheckIn} = useCheckIns()
+const {properties} = useProperties()
 
-const GRACE_PERIOD = 2 * 60 * 60 * 1000; //able to check in 2 hours away from check in time
+const GRACE_PERIOD = 2 * 60 * 60 * 1000 //able to check in 2 hours away from check in time
+let isLoaded = false
+const selectProperty = ref()
 
-let properties = getProperties();
-const selectProperty = ref();
-
-const questions = ref([
+const checkInQuestions = ref([
   new Question({
     name: "name",
     label:"Guest Name",
@@ -56,58 +55,66 @@ const questions = ref([
   }), 
 ])
 
-const checkInDialog = ref(false);
-const filterDialog = ref(false);
-let queryValues = {};
+const filterQuestions = ref([
+  new Question({
+    name: "order",
+    label:"Order By",
+    type: "select",
+    schema: z.string().min(1, {message: "Valid order required!"}),
+    attributes: {
+      "v-model": queryFilters.order,
+      options: orderOptions
+    }
+  }),
+  new Question({
+    name: "minDate",
+    label:"After:",
+    type: "datetime",
+    schema: z.date({invalid_type_error: "Invalid date."}),
+    attributes: {
+      minDate: new Date(Date.now() - GRACE_PERIOD),
+      manualInput: false,
+      showTime: true,
+      hourFormat: "12",
+    }
+  }),
+  new Question({
+    name: "maxDate",
+    label:"Before:",
+    type: "datetime",
+    schema: z.date({invalid_type_error: "Invalid date."}),
+    attributes: {
+      minDate: new Date(Date.now() - GRACE_PERIOD),
+      manualInput: false,
+      showTime: true,
+      hourFormat: "12",
+    }
+  }),  
+])
 
-let isLoaded = false;
-
-let orderOptions = ref(["oldest", "newest"]);
-
-const queryFormResolver = ({ values }) => {
-  queryValues = values;
-
-  return {};
-};
-
-const updateProperties = async () => {
-  properties = await getProperties();
-  selectProperty.value = await getProperties();
-};
-
-const updateProperty = (value) => {
-  if (value.name === "any") {
-    queryFilters.value.keywords = [];
-  } else {
-    queryFilters.value.keywords = [value];
-  }
-};
-
+const display = ref({
+  checkIn : false,
+  filter : false,
+})
 
 const openFilterDialog = () => {
-  filterDialog.value = true;
-};
+  display.value.filter = true
+}
 
 const openCheckIn = () => {
-  //optional value
+  display.value.checkIn = true
+}
 
-  checkInDialog.value = true;
-};
-
-const onFilterSubmit = async ({ valid }) => {
-  if (!valid) {
-    return;
-  }
-
-  refreshQuery(queryValues);
-  queryFilters.value = queryValues;
-  queryValues = {};
-  filterDialog.value = false;
-};
+const onFilterSubmit = async ({ valid, values }) => {
+  if (!valid) return
+  queryFilters.value = values
+  refreshQuery()
+  display.value.filter = false
+}
 
 const formatPhoneNumber = (phone) => {
-  return phone.replace(/\D/g, "");
-};
+  return phone.replace(/\D/g, "")
+}
 
 const onCheckInSubmit = ({ valid, values }) => {
   if (!valid) return
@@ -122,23 +129,29 @@ const onCheckInSubmit = ({ valid, values }) => {
   }
 
   try {
-    checkInDialog.value = false;
-    refreshQuery();
+    display.value.checkIn = false
+    refreshQuery()
   } catch (err) {
-    console.log("ERROR: ", err);
+    console.log("ERROR: ", err)
   }
 
-};
+}
+
+const updateProperty = (value) => {
+  if (value.name === "any") {
+    queryFilters.value.keywords = []
+  } else {
+    queryFilters.value.keywords = [value]
+  }
+}
 
 onMounted(async () => {
   if (!isLoaded) {
-    await updateProperties();
-    refreshQuery(queryFilters.value);
-    questions.value[1].attributes.options = properties
-    console.log(questions.value[1].attributes.options)
-    isLoaded = true;
+    refreshQuery(queryFilters.value)
+    checkInQuestions.value[1].attributes.options = properties
+    isLoaded = true
   }
-});
+})
 </script>
 
 <template>
@@ -154,47 +167,13 @@ onMounted(async () => {
 
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <CheckInTable :values="checkIns" editable :open-form="openCheckIn" :open-filter="openFilterDialog" :del="deleteCheckIn" />
+    <CheckInTable :values="checkIns" :columns="columns" editable filterable :open-form="openCheckIn" :open-filter="openFilterDialog" :del="deleteCheckIn" />
   </div>
 
   <!-- Check-In Dialog -->
-  <CheckInDialog :onSubmit="onCheckInSubmit" :questions="questions" v-model:visible="checkInDialog" header="Create or Edit Check In" />
+  <SmartDialog :onSubmit="onCheckInSubmit" :questions="checkInQuestions" v-model:visible="display.checkIn" header="Create or Edit Check In" />
   
   <!-- Filter Check In Dialog -->
-  <Dialog v-model:visible="filterDialog" class="w-[450px]" header="Filters" :modal="true">
-    <Form v-slot="$form" :initial-values="queryFilters" :resolver="queryFormResolver" class="flex flex-col gap-6"
-      @submit="onFilterSubmit">
-      <div class="flex flex-col gap-1">
-        <label for="order" class="block font-bold mb-3">Order By</label>
-        <Select name="order" :options="orderOptions" class="w-56" />
-        <Message v-if="$form?.order?.invalid" severity="error" size="small" variant="simple">
-          {{ $form?.order?.error.message }}
-        </Message>
-      </div>
-      <div class="flex flex-col gap-1">
-        <label for="limit" class="block font-bold mb-3">Limit</label>
-        <InputNumber name="limit" fluid />
-        <Message v-if="$form?.limit?.invalid" severity="error" size="small" variant="simple">
-          {{ $form?.limit?.error.message }}
-        </Message>
-      </div>
-      <div class="flex flex-col gap-1">
-        <label for="minDate" class="block font-bold mb-3">After</label>
-        <DatePicker name="minDate" :min-date="new Date(Date.now() - GRACE_PERIOD)" :manual-input="false" showTime
-          hourFormat="12" fluid />
-        <Message v-if="$form?.minDate?.invalid" severity="error" size="small" variant="simple">
-          {{ $form?.minDate?.error.message }}
-        </Message>
-      </div>
-      <div class="flex flex-col gap-1">
-        <label for="maxDate" class="block font-bold mb-3">Before</label>
-        <DatePicker name="maxDate" :min-date="new Date(Date.now() - GRACE_PERIOD)" :manual-input="false" showTime
-          hourFormat="12" fluid />
-        <Message v-if="$form?.maxDate?.invalid" severity="error" size="small" variant="simple">
-          {{ $form?.maxDate?.error.message }}
-        </Message>
-      </div>
-      <Button type="submit" severity="danger" label="Submit" />
-    </Form>
-  </Dialog>
+  <SmartDialog :onSubmit="onFilterSubmit" :questions="filterQuestions" v-model:visible="display.filter" header="Filters" />
+
 </template>

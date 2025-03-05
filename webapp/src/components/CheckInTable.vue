@@ -1,10 +1,18 @@
 <script setup>
-const {values, editable, openForm, openFilter, del} = defineProps({
+const {values, columns, editable, filterable, openForm, openFilter, del} = defineProps({
     values: {
         type: Array,
         required: true
     },
+    columns : {
+        type: [{
+          field: String,
+          header: String
+        }],
+        required: true
+    },
     editable: Boolean,
+    filterable: Boolean,
     openForm: {
         type: Function,
     },
@@ -24,15 +32,14 @@ const {values, editable, openForm, openFilter, del} = defineProps({
           <span class="text-xl text-900 font-bold">
             <slot /> <!--Pass in name-->
           </span>
-          <span class="flex px-4 gap-2" v-if="editable">
-            <Button icon="pi pi-plus" label="New" raised @click="openForm"></Button>
-            <Button icon="pi pi-filter" label="Filters" raised @click="openFilter"></Button>
+          <span class="flex px-4 gap-2">
+            <Button icon="pi pi-plus" label="New" raised @click="openForm" v-if="editable"></Button>
+            <Button icon="pi pi-filter" label="Filters" raised @click="openFilter" v-if="filterable"></Button>
           </span>
         </div>
       </template>
-      <Column field="name" header="Guest"></Column>
-      <Column field="property" header="Property"></Column>
-      <Column field="status" header="Status"></Column>
+      <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header"></Column>
+
       <Column class="w-24 !text-end" v-if="editable">
         <template #body="{ data }">
           <div class="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200">

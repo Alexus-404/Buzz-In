@@ -1,7 +1,7 @@
 <script setup>
 import {zodResolver} from "@primevue/forms/resolvers/zod"
 import {Question} from '@/services/question'
-import { InputText, Select } from "primevue"
+import { InputMask, InputNumber, InputText, Select } from "primevue"
 import {z} from 'zod'
 
 import DatePicker from "primevue/datepicker"
@@ -39,6 +39,10 @@ function getComponent(type) {
             return Select
         case 'datetime':
             return DatePicker
+        case 'number':
+            return InputNumber
+        case 'mask':
+            return InputMask
         default:
             return InputText
     }

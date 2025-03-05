@@ -13,8 +13,23 @@ const dbRef = fbRef(db, pathToUser + "/CheckIns")
 
 export function useCheckIns() {
   const checkIns = reactive([])
+  const columns = [
+    {
+      field: "name",
+      header: "Guest Name"
+    },
+    {
+      field: "property",
+      header: "Property"
+    },
+    {
+      field: "time",
+      header: "Check-In Time"
+    },
+  ]
+  const orderOptions = ["oldest", "newest"]
   const queryFilters = reactive({
-    order: "recent",
+    order: "newest",
     limit: 25,
     minDate: new Date(Date.now() - GRACE_PERIOD),
     maxDate: new Date(Date.now() + MAX_DELTA),
@@ -22,6 +37,7 @@ export function useCheckIns() {
   })
 
   const refreshQuery = async () => {
+    checkIns.length = 0
     try {
       const query = fbQuery(dbRef, orderByChild("time"), limitToFirst(queryFilters.limit), startAt(queryFilters.minDate.valueOf() - GRACE_PERIOD), endAt(queryFilters.maxDate.valueOf()))
       const snapshot = await get(query)
@@ -69,6 +85,6 @@ export function useCheckIns() {
     set(checkInRef, checkIn);
   }
   return {
-    queryFilters, checkIns, refreshQuery, deleteCheckIn, createCheckIn, editCheckIn
+    queryFilters, columns, orderOptions, checkIns, refreshQuery, deleteCheckIn, createCheckIn, editCheckIn
   }
 }
