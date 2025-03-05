@@ -37,6 +37,7 @@ const app = createApp(App)
       },
     },
   })
+  .component("Form", Form)
   .component("Button", Button)
   .component("ButtonGroup", ButtonGroup)
   .component("DataTable", DataTable)

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useLayout } from "@/composables/layout";
+import { useLayout } from "@/composables/useLayout";
 
 const { setActiveMenuItem, layoutState } = useLayout();
 const router = useRouter();

@@ -25,22 +25,13 @@ onMounted(async () => {
 <template>
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <DataTable
-      :value="callLog"
-      ref="dt"
-      tableStyle="min-width: 50rem"
-      :rowClass="() => 'group'"
-    >
+    <DataTable :value="callLog" ref="dt" tableStyle="min-width: 50rem" :rowClass="() => 'group'">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-between gap-2">
           <span class="text-xl text-900 font-bold">Recent Calls</span>
         </div>
         <div class="text-end pb-4">
-          <Button
-            icon="pi pi-external-link"
-            label="Export"
-            @click="exportCSV($event)"
-          />
+          <Button icon="pi pi-external-link" label="Export" @click="exportCSV($event)" />
         </div>
       </template>
       <Column field="time" header="Time"></Column>

@@ -53,17 +53,13 @@ const logInWithGoogle = async () => {
 </script>
 
 <template>
-  <div
-    class="w-screen h-screen bg-gradient-to-t from-primary to-primary-200 flex justify-center items-center"
-  >
+  <div class="w-screen h-screen bg-gradient-to-t from-primary to-primary-200 flex justify-center items-center">
     <div
-      class="w-[500px] h-[450px] flex flex-col justify-between items-center border-4 border-surface-200 bg-surface-0 mx-auto drop-shadow-xl"
-    >
+      class="w-[500px] h-[450px] flex flex-col justify-between items-center border-4 border-surface-200 bg-surface-0 mx-auto drop-shadow-xl">
       <h1 class="text-[30px] p-10">User Sign In and Registration</h1>
       <button
         class="mb-[200px] self-center inline-flex items-center bg-transparent text-black font-semibold hover:text-primary py-2 px-4 hover:border-primary border-2 border-surface-100 rounded"
-        @click="logInWithGoogle"
-      >
+        @click="logInWithGoogle">
         <img class="w-4 h-4 mr-2" src="@/assets/images/google-icon-logo.svg" />
         <span>With Google</span>
       </button>

@@ -3,7 +3,7 @@ import logo from "@/assets/images/logo-generic.svg";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { auth } from "@/firebase"; //TODO: Change to airbnb auth
-import { useLayout } from "@/composables/layout";
+import { useLayout } from "@/composables/useLayout";
 
 const { toggleMenu } = useLayout();
 

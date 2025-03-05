@@ -95,21 +95,11 @@ onMounted(() => {
 <template>
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <DataTable
-      :value="properties"
-      tableStyle="min-width: 50rem"
-      selectionMode="single"
-      :rowClass="() => 'group'"
-    >
+    <DataTable :value="properties" tableStyle="min-width: 50rem" selectionMode="single" :rowClass="() => 'group'">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-between gap-2">
           <span class="text-xl text-900 font-bold">Properties</span>
-          <Button
-            icon="pi pi-plus"
-            label="New"
-            raised
-            @click="openProperty"
-          ></Button>
+          <Button icon="pi pi-plus" label="New" raised @click="openProperty"></Button>
         </div>
       </template>
       <Column field="number" header="Number"></Column>
@@ -117,79 +107,36 @@ onMounted(() => {
       <Column field="address" header="Address"></Column>
       <Column class="w-24 !text-end">
         <template #body="{ data }">
-          <div
-            class="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
-            <Button
-              @click="openProperty(data)"
-              icon="pi pi-pencil"
-              severity="secondary"
-              rounded
-            ></Button>
-            <Button
-              @click="deleteProperty(data)"
-              icon="pi pi-trash"
-              severity="urgent"
-              variant="text"
-              rounded
-            ></Button>
+          <div class="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Button @click="openProperty(data)" icon="pi pi-pencil" severity="secondary" rounded></Button>
+            <Button @click="deleteProperty(data)" icon="pi pi-trash" severity="urgent" variant="text" rounded></Button>
           </div>
         </template>
       </Column>
     </DataTable>
   </div>
 
-  <Dialog
-    v-model:visible="showPropertyModal"
-    class="w-[450px]"
-    header="Create or Edit Property"
-    :modal="true"
-  >
-    <Form
-      v-slot="$form"
-      :initial-values="propertyValue"
-      :resolver="formResolver"
-      class="flex flex-col gap-6"
-      @submit="onSubmitProperty"
-    >
+  <Dialog v-model:visible="showPropertyModal" class="w-[450px]" header="Create or Edit Property" :modal="true">
+    <Form v-slot="$form" :initial-values="propertyValue" :resolver="formResolver" class="flex flex-col gap-6"
+      @submit="onSubmitProperty">
       <div class="flex flex-col gap-1">
         <label for="name" class="block font-bold mb-3">Property Name</label>
         <InputText name="name" autofocus placeholder="Apartment Name" fluid />
-        <Message
-          v-if="$form?.name?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+        <Message v-if="$form?.name?.invalid" severity="error" size="small" variant="simple">
           {{ $form?.name?.error.message }}
         </Message>
       </div>
       <div class="flex flex-col gap-1">
         <label for="address" class="block font-bold mb-3">Address</label>
         <InputText name="address" autofocus placeholder="Address Here" />
-        <Message
-          v-if="$form?.address?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+        <Message v-if="$form?.address?.invalid" severity="error" size="small" variant="simple">
           {{ $form?.address?.error.message }}
         </Message>
       </div>
       <div class="flex flex-col gap-1">
         <label for="number" class="block font-bold mb-3">Phone Number</label>
-        <InputMask
-          name="number"
-          mask="+9 (999) 999-9999"
-          placeholder="+1 (999) 999-9999"
-          fluid
-        />
-        <Message
-          v-if="$form?.number?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+        <InputMask name="number" mask="+9 (999) 999-9999" placeholder="+1 (999) 999-9999" fluid />
+        <Message v-if="$form?.number?.invalid" severity="error" size="small" variant="simple">
           {{ $form?.number?.error.message }}
         </Message>
       </div>

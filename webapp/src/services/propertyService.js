@@ -13,24 +13,28 @@ const formatPhoneNumber = (number) => {
   )}) ${localNumber.substring(3, 6)}-${localNumber.substring(6)}`;
 };
 
-const getProperties = async () => {
-  try {
-    const snapshot = await get(dbRef);
+export function useProperties() {
+  const getProperties = async () => {
+    try {
+      const snapshot = await get(dbRef);
+  
+      if (!snapshot.exists()) return [];
+  
+      let results = [];
+      snapshot.forEach((snapChild) => {
+        const property = snapChild.val();
+        property.number = formatPhoneNumber(snapChild.key);
+  
+        results.push(property);
+      });
+      console.log(results)
+      return results;
+    } catch (err) {
+      console.error("Error fetching properties:", err);
+      return [];
+    }
+  };
 
-    if (!snapshot.exists()) return [];
+  return { getProperties };
 
-    let results = [];
-    snapshot.forEach((snapChild) => {
-      const property = snapChild.val();
-      property.number = formatPhoneNumber(snapChild.key);
-
-      results.push(property);
-    });
-    return results;
-  } catch (err) {
-    console.error("Error fetching properties:", err);
-    return [];
-  }
-};
-
-export { getProperties };
+}
