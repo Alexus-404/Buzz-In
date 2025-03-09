@@ -1,55 +1,59 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useUserData } from "@/composables/useUserData";
-import { auth, db, ref as fbRef, set } from "@/firebase";
+import { ref } from "vue"
+import { useRouter } from "vue-router"
+import { useUserData } from "@/composables/useUserData"
+import { auth, db, ref as fbRef, set } from "@/firebase"
 import {
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
-} from "firebase/auth";
+  browserLocalPersistence,
+  setPersistence
+} from "firebase/auth"
 
-const provider = new GoogleAuthProvider();
-const { initializeUserData } = useUserData();
+const provider = new GoogleAuthProvider()
+const { initializeUserData } = useUserData()
 
-const errMsg = ref();
-const router = useRouter();
+const errMsg = ref()
+const router = useRouter()
 
 const logInWithGoogle = async () => {
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      const { isNewUser } = getAdditionalUserInfo(result);
-      if (isNewUser) {
-        register(result.user);
-      }
-      initializeUserData();
-      router.push("/");
-    })
-    .catch((err) => {
-      switch (err.code) {
-        case "auth/invalid-email":
-          errMsg.value = "Invalid email";
-          break;
-        case "auth/user-not-found":
-          errMsg.value = "No account with that email was found";
-          break;
-        case "auth/wrong-password":
-          errMsg.value = "Incorrect password";
-          break;
-        default:
-          console.log(err);
-          errMsg.value = "Email or password was incorrect";
-          break;
-      }
-    });
+  try {
+    await setPersistence(auth, browserLocalPersistence)
+    const result = await signInWithPopup(auth, provider)
+    const { isNewUser } = getAdditionalUserInfo(result)
 
-  const register = async (user) => {
-    const userRef = fbRef(db, "users/" + user.uid);
-    set(userRef, {
-      email: user.email,
-    });
-  };
-};
+    if (isNewUser) {
+      await register(result.user)
+    }
+
+    initializeUserData()
+    router.push("/")
+  } catch (err) {
+    switch (err.code) {
+      case "auth/invalid-email":
+        errMsg.value = "Invalid email"
+        break
+      case "auth/user-not-found":
+        errMsg.value = "No account with that email was found"
+        break
+      case "auth/wrong-password":
+        errMsg.value = "Incorrect password"
+        break
+      default:
+        errMsg.value = "Email or password was incorrect"
+        break
+    }
+  }
+}
+
+
+const register = async (user) => {
+  const userRef = fbRef(db, "users/" + user.uid)
+  set(userRef, {
+    email: user.email,
+  })
+}
 </script>
 
 <template>

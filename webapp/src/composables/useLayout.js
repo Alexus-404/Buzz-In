@@ -12,7 +12,6 @@ export function useLayout() {
 
   const toggleMenu = () => {
     layoutState.sideBarMenuActive = !layoutState.sideBarMenuActive;
-    console.log(layoutState.sideBarMenuActive);
   };
 
   const isSidebarActive = computed(() => layoutState.sideBarMenuActive);

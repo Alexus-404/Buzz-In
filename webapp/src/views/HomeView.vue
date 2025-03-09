@@ -107,7 +107,7 @@ const openCheckIn = () => {
 
 const onFilterSubmit = async ({ valid, values }) => {
   if (!valid) return
-  queryFilters.value = values
+  queryFilters = values
   refreshQuery()
   display.value.filter = false
 }
@@ -139,15 +139,15 @@ const onCheckInSubmit = ({ valid, values }) => {
 
 const updateProperty = (value) => {
   if (value.name === "any") {
-    queryFilters.value.keywords = []
+    queryFilters.keywords = []
   } else {
-    queryFilters.value.keywords = [value]
+    queryFilters.keywords = [value]
   }
 }
 
 onMounted(async () => {
   if (!isLoaded) {
-    refreshQuery(queryFilters.value)
+    refreshQuery(queryFilters)
     checkInQuestions.value[1].attributes.options = properties
     isLoaded = true
   }

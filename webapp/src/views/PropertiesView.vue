@@ -62,7 +62,6 @@ const openProperty = () => {
 
 const onSubmitProperty = ({ valid, values }) => {
   if (!valid) return
-  console.log(values)
   const number = formatPhoneNumber(values.number)
   values.number = null
 

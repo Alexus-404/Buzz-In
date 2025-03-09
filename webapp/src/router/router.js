@@ -1,6 +1,7 @@
 import AppLayout from "@/layout/AppLayout.vue";
 import { createWebHistory, createRouter } from "vue-router";
-import { auth } from "../firebase";
+import {auth} from "@/firebase"
+import { onAuthStateChanged } from "firebase/auth";
 import AccountLayout from "@/layout/AccountLayout.vue";
 
 const routes = [
@@ -54,8 +55,12 @@ const router = createRouter({
   routes,
 });
 
+let user = null
+onAuthStateChanged(auth, (firebaseUser) => {
+  user = firebaseUser;
+});
+
 router.beforeEach((to, from, next) => {
-  const user = auth.currentUser;
   if (to.matched.some((record) => record.meta.requiresAuth) && !user) {
     next("/login");
   } else {

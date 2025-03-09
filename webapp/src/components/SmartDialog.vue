@@ -23,10 +23,6 @@ const resolver = zodResolver(
     ))
 )
 
-console.log(z.object(Object.fromEntries(
-        questions.map(q => [q.name, q.schema]) //ensures auto type validation
-    ))
-)
 const initialValues = Object.fromEntries(
     questions.map(q => [q.name, q.init])
 )
