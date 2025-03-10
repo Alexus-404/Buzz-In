@@ -1,11 +1,11 @@
 import {reactive} from 'vue'
-import { auth, db, ref as fbRef, get } from "@/firebase";
-import { formatDate } from "../services/formats";
+import { auth, db, ref as fbRef, get } from "@/firebase"
+import { formatDate } from "../services/formats"
 
-const user = auth.currentUser;
-const pathToUser = `users/${user.uid}`;
+const user = auth.currentUser
+const pathToUser = `users/${user.uid}`
 const callLogPath = `${pathToUser}/CallLog`
-const dbRef = fbRef(db, callLogPath);
+const dbRef = fbRef(db, callLogPath)
 
 export function useCallLogs() {
   const callLogs = reactive([])
@@ -19,31 +19,32 @@ export function useCallLogs() {
   const refreshCalls = async () => {
     callLogs.length = 0
     try {
-      const snapshot = await get(dbRef);
+      const snapshot = await get(dbRef)
   
-      if (!snapshot.exists()) return [];
+      if (!snapshot.exists()) return []
   
       snapshot.forEach(async (snapChild) => {
-        const callInfo = snapChild.val();
+        const callInfo = snapChild.val()
         const propertyRef = fbRef(
           db,
           pathToUser + "/Properties/" + callInfo.caller
-        );
-        callInfo.property = (await get(propertyRef)).val().name;
-        callInfo.time = formatDate(new Date(Number(snapChild.key)));
+        )
+        const foundProperty = (await get(propertyRef)).val()
+        callInfo.property = foundProperty ? foundProperty.name : "undefined"
+        callInfo.time = formatDate(new Date(Number(snapChild.key)))
         switch (callInfo.status) {
           case true:
-            callInfo.status = "✅";
-            break;
+            callInfo.status = "✅"
+            break
           default:
-            callInfo.status = "❌";
-            break;
+            callInfo.status = "❌"
+            break
         }
         console.log(callInfo) 
-        callLogs.push(callInfo);
-      });
+        callLogs.push(callInfo)
+      })
     } catch (err) {
-      console.error("Error fetching call log:", err);
+      console.error("Error fetching call log:", err)
     }
   }
 

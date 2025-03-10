@@ -69,7 +69,7 @@ def open_door(userId: str, response):
         response.say(f"Played {property['dtmf']} key.")
 
 def record_call(userId: str, success: bool):
-    dt = round(datetime.now(tz).timestamp())
+    dt = round(datetime.now(tz).timestamp()) * 1000 #in milliseconds for easy conversion in front-end
 
     caller_id = str(request.form.get("From", ""))[1:]
 
