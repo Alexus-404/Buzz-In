@@ -1,3 +1,4 @@
+import { formatDate } from "./formats";
 const GRACE_PERIOD = 2 * 60 * 60 * 1000; 
 
 export function getStatus(targetDate) {
@@ -24,10 +25,6 @@ export function getStatus(targetDate) {
   } else if (dayBeforeOpen < 7) {
     return `in ${dayBeforeOpen} day${dayBeforeOpen > 1 ? "s" : ""}`;
   } else {
-    return targetDate.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatDate(targetDate)
   }
 }

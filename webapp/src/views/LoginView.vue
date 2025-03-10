@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
-import { useUserData } from "@/composables/useUserData"
 import { auth, db, ref as fbRef, set } from "@/firebase"
 import {
   GoogleAuthProvider,
@@ -12,7 +11,6 @@ import {
 } from "firebase/auth"
 
 const provider = new GoogleAuthProvider()
-const { initializeUserData } = useUserData()
 
 const errMsg = ref()
 const router = useRouter()
@@ -27,7 +25,6 @@ const logInWithGoogle = async () => {
       await register(result.user)
     }
 
-    initializeUserData()
     router.push("/")
   } catch (err) {
     switch (err.code) {

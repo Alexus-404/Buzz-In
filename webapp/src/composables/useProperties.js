@@ -1,19 +1,12 @@
 import { reactive } from "vue"
 import { auth, db, ref as fbRef, get } from "@/firebase"
 import {set, remove} from "firebase/database"
+import { phoneToNumber, formatPhoneNumber } from "@/services/formats"
 
 const user = auth.currentUser
 const pathToUser = `users/${user.uid}`
-const dbRef = fbRef(db, pathToUser + "/Properties")
-
-const formatPhoneNumber = (number) => {
-  let countryCode = number.substring(0, number.length - 10)
-  const localNumber = number.substring(number.length - 10)
-  return `+${countryCode} (${localNumber.substring(
-    0,
-    3
-  )}) ${localNumber.substring(3, 6)}-${localNumber.substring(6)}`
-}
+const propertiesPath = `${pathToUser}/Properties`
+const dbRef = fbRef(db, propertiesPath)
 
 export function useProperties() {
   const properties = reactive([])
@@ -24,7 +17,7 @@ export function useProperties() {
     },
 
     {
-      field: "number",
+      field: "phoneString",
       header: "Phone Number"
     },
     {
@@ -37,6 +30,8 @@ export function useProperties() {
     },
   ]
 
+  const getPropertyRef = (pId) => fbRef(db,propertiesPath + "/" + phoneToNumber(pId))
+
   const refreshProperties = async () => {
     properties.length = 0
     try {
@@ -45,9 +40,9 @@ export function useProperties() {
       if (!snapshot.exists()) return
   
       snapshot.forEach((snapChild) => {
-        const property = snapChild.val()
-        property.number = formatPhoneNumber(snapChild.key)
-  
+        const property = snapChild.val()  
+        property.number = snapChild.key
+        property.phoneString = formatPhoneNumber(property.number)
         properties.push(property)
       })
     } catch (err) {
@@ -56,14 +51,22 @@ export function useProperties() {
     }
   }
 
-  const submitProperty = (pNumber, property) => {
-    const propertyRef = fbRef(db,pathToUser + "/Properties/" + pNumber)
-    set(propertyRef, property)
+  const submitProperty = async (property) => {
+    try {
+      await set(getPropertyRef(property.number), property)
+      await refreshProperties()
+    } catch (err) {
+      console.error("Error submitting property:", err)
+    }
   }
 
-  const deleteProperty = (pNumber) => {
-    const propertyRef = fbRef(db,pathToUser + "/Properties/" + formatPhoneNumber(pNumber))
-    remove(propertyRef)
+  const deleteProperty = async (property) => {
+    try {
+      await remove(getPropertyRef(property.number))
+      await refreshProperties()
+    } catch (err) {
+      console.error("Error deleting property:", err)
+    }
   }
 
   refreshProperties() //initialize properties value

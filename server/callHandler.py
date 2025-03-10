@@ -65,8 +65,8 @@ def open_door(userId: str, response):
 
     property = properties.get(incomingNumber)
     if property:
-        response.play(digits=property["dtmf"] or 6)
-        response.say(f"Played {property['dtmf'] or 6} key.")
+        response.play(digits=property["dtmf"])
+        response.say(f"Played {property['dtmf']} key.")
 
 def record_call(userId: str, success: bool):
     properties = db.reference(f"/users/{userId}/Properties").get() or {}

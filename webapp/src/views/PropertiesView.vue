@@ -1,22 +1,17 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref } from "vue"
 import {z} from 'zod'
 import validator from "validator"
-import {Question} from "@/services/question"
-import { formatPhoneNumber } from "@/services/formatPhone"
 import { useProperties } from "@/composables/useProperties"
 
 import SmartDialog from "@/components/SmartDialog.vue"
-import CheckInTable from "@/components/CheckInTable.vue"
+import SmartTable from "@/components/SmartTable.vue"
 
-const { properties, columns, refreshProperties, deleteProperty, submitProperty } = useProperties()
-
+const { properties, columns, deleteProperty, submitProperty } = useProperties()
 const showPropertyModal = ref(false)
 
-let isLoaded = false
-
 const questions = [
-new Question({
+{
     name: "name",
     label:"Property Name",
     type: "text",
@@ -24,8 +19,8 @@ new Question({
     attributes: {
       mask: "autofocus"
     }
-  }),
-new Question({
+  },
+{
     name: "address",
     label:"Condo Address",
     type: "text",
@@ -33,8 +28,8 @@ new Question({
     attributes: {
       mask: "autofocus"
     }
-  }),
-new Question({
+  },
+{
     name: "dtmf",
     label:"Dial Tone",
     type: "number",
@@ -44,8 +39,8 @@ new Question({
       max: 9,
       inputId: "integeronly",
     }
-  }),
-new Question({
+  },
+{
     name: "number",
     label:"Condo Phone Number",
     type: "mask",
@@ -53,7 +48,7 @@ new Question({
     attributes: {
       mask: "+9 (999) 999-9999"
     }
-  }),
+  },
 ]
 
 const openProperty = () => {
@@ -62,30 +57,24 @@ const openProperty = () => {
 
 const onSubmitProperty = ({ valid, values }) => {
   if (!valid) return
-  const number = formatPhoneNumber(values.number)
-  values.number = null
-
   try {
-    submitProperty(number, values)
+    submitProperty(values)
     showPropertyModal.value = false
-    refreshProperties()
   } catch (err) {
-    console.log("ERROR: ", err)
+    console.error("ERROR: ", err)
   }
 }
-
-onMounted(async () => {
-  if (!isLoaded) {
-    await refreshProperties()
-    isLoaded = true
-  }
-})
 </script>
 
 <template>
+    <!-- Header -->
+    <div class="w-[80%] ml-auto mr-auto mt-[5rem] flex items-center">
+      <span class="text-xl font-bold">Properties</span>
+    </div>
+
   <!-- Body -->
-  <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <CheckInTable :values="properties" :columns="columns" editable :open-form="openProperty" :del="deleteProperty" />
+  <div class="w-[80%] ml-auto mr-auto my-[2rem]">
+    <SmartTable :values="properties" :columns="columns" editable :open-form="openProperty" :del="deleteProperty" />
   </div>
 
   <SmartDialog :onSubmit="onSubmitProperty" :questions="questions" v-model:visible="showPropertyModal" header="Property"/>

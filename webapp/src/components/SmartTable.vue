@@ -1,5 +1,6 @@
 <script setup>
-const {values, columns, editable, filterable, openForm, openFilter, del} = defineProps({
+import {ref} from 'vue'
+const {values, columns, editable, filterable, exportable, openForm, openFilter, del} = defineProps({
     values: {
         type: Array,
         required: true
@@ -13,6 +14,7 @@ const {values, columns, editable, filterable, openForm, openFilter, del} = defin
     },
     editable: Boolean,
     filterable: Boolean,
+    exportable: Boolean,
     openForm: {
         type: Function,
     },
@@ -21,12 +23,18 @@ const {values, columns, editable, filterable, openForm, openFilter, del} = defin
     },
     del: {
         type: Function,
-    }
+    },
 }) 
+
+const dataTable = ref()
+
+const exportCSV = () => {
+  dataTable.value.exportCSV()
+}
 </script>
 
 <template>
-   <DataTable :value="values" tableStyle="min-width: 50rem" selectionMode="single" :rowClass="() => 'group'">
+   <DataTable :value="values" ref="dataTable" tableStyle="min-width: 50rem" selectionMode="single" :rowClass="() => 'group'">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-between gap-2">
           <span class="text-xl text-900 font-bold">
@@ -35,6 +43,7 @@ const {values, columns, editable, filterable, openForm, openFilter, del} = defin
           <span class="flex px-4 gap-2">
             <Button icon="pi pi-plus" label="New" raised @click="openForm" v-if="editable"></Button>
             <Button icon="pi pi-filter" label="Filters" raised @click="openFilter" v-if="filterable"></Button>
+            <Button icon="pi pi-external-link" label="Export" raised @click="exportCSV" v-if="exportable"></Button>
           </span>
         </div>
       </template>
@@ -43,7 +52,7 @@ const {values, columns, editable, filterable, openForm, openFilter, del} = defin
       <Column class="w-24 !text-end" v-if="editable">
         <template #body="{ data }">
           <div class="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <Button @click="openForm(data)" icon="pi pi-pencil" severity="secondary" rounded></Button>
+            <Button @click="openForm({data : data, edit : true})" icon="pi pi-pencil" severity="secondary" rounded></Button>
             <Button @click="del(data)" icon="pi pi-trash" severity="urgent" variant="text" rounded></Button>
           </div>
         </template>

@@ -1,10 +1,12 @@
 <script setup>
+import {computed} from 'vue'
+import {getAuth} from 'firebase/auth'
 import AppMenu from "./AppMenu.vue";
 import AppHeader from "./AppHeader.vue";
-import AppLoading from "./AppLoading.vue";
 
-import { useUserData } from "@/composables/useUserData";
-const { loading } = useUserData();
+const auth = getAuth()
+const isLoggedIn = computed(() => auth.currentUser)
+
 </script>
 
 <template>
@@ -25,8 +27,8 @@ const { loading } = useUserData();
     <!-- Main Content -->
     <main class="ml-64">
       <div class="w-full h-full bg-surface">
-        <app-loading v-if="loading" />
-        <router-view v-else />
+        <router-view v-if="isLoggedIn" />
+        <i class="pi pi-spin pi-spinner text-xl" v-else />
       </div>
     </main>
   </div>

@@ -50,6 +50,6 @@ const app = createApp(App)
   .component("InputText", InputText)
   .component("DatePicker", DatePicker)
   .component("InputMask", InputMask)
-  .component("InputNumber", InputNumber);
+  .component("InputNumber", InputNumber)
 
 app.mount("#app");

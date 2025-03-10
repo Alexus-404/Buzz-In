@@ -1,21 +1,24 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, watch } from "vue"
 import {z} from 'zod'
-import {Question} from "@/services/question"
 import { useCheckIns } from "@/composables/useCheckIn"
 import { useProperties } from "@/composables/useProperties"
-import CheckInTable from "@/components/CheckInTable.vue"
+import SmartTable from "@/components/SmartTable.vue"
 import SmartDialog from "@/components/SmartDialog.vue"
 
 const {queryFilters, columns, orderOptions, checkIns, refreshQuery, deleteCheckIn, editCheckIn, createCheckIn} = useCheckIns()
 const {properties} = useProperties()
 
 const GRACE_PERIOD = 2 * 60 * 60 * 1000 //able to check in 2 hours away from check in time
-let isLoaded = false
-const selectProperty = ref()
+const propertyOptions = ref([]) //to be populated with other properties
+const selectedProperty = ref({
+  name : "all"
+}) //default value
+const initialCheckInValue = ref({})
+const isEdit = ref(false)
 
 const checkInQuestions = ref([
-  new Question({
+  {
     name: "name",
     label:"Guest Name",
     placeholder: "Input guest name",
@@ -24,8 +27,8 @@ const checkInQuestions = ref([
     attributes: {
       autofocus : true,
     }
-  }),
-  new Question({
+  },
+  {
     name: "property",
     label:"Property",
     placeholder: "Select a property",
@@ -34,14 +37,15 @@ const checkInQuestions = ref([
       name: z.string(),
       address: z.string(),
       dtmf: z.number(),
-      number: z.string()
+      number: z.string(),
+      phoneString: z.string()
     }),
     attributes: {
       options: [],
       optionLabel: "name",
     }
-  }),
-  new Question({
+  },
+  {
     name: "time",
     label:"Check-In Time",
     type: "datetime",
@@ -52,21 +56,21 @@ const checkInQuestions = ref([
       showTime: true,
       hourFormat: "12",
     }
-  }), 
+  }, 
 ])
 
 const filterQuestions = ref([
-  new Question({
+  {
     name: "order",
     label:"Order By",
     type: "select",
     schema: z.string().min(1, {message: "Valid order required!"}),
     attributes: {
-      "v-model": queryFilters.order,
+      "v-model": queryFilters.value.order,
       options: orderOptions
     }
-  }),
-  new Question({
+  },
+  {
     name: "minDate",
     label:"After:",
     type: "datetime",
@@ -77,8 +81,8 @@ const filterQuestions = ref([
       showTime: true,
       hourFormat: "12",
     }
-  }),
-  new Question({
+  },
+  {
     name: "maxDate",
     label:"Before:",
     type: "datetime",
@@ -89,7 +93,21 @@ const filterQuestions = ref([
       showTime: true,
       hourFormat: "12",
     }
-  }),  
+  },
+  {
+    name: "limit",
+    label:"Display",
+    type: "number",
+    schema: z.number({
+      required_error: "Display limit is required.",
+      invalid_type_error: "Display limit must be a number."
+    }),
+    attributes: {
+      inputId: "integeronly",
+      min: 25,
+      max: 50,
+    }
+  },    
 ])
 
 const display = ref({
@@ -101,57 +119,59 @@ const openFilterDialog = () => {
   display.value.filter = true
 }
 
-const openCheckIn = () => {
+const hideFilterDialog = () => {
+  display.value.filter = false
+}
+
+const openCheckIn = ({data, edit}) => {
+  if (edit) initialCheckInValue.value = {...data}
   display.value.checkIn = true
+
+  isEdit.value = edit
+}
+
+const hideCheckIn = () => {
+  display.value.checkIn = false
 }
 
 const onFilterSubmit = async ({ valid, values }) => {
   if (!valid) return
-  queryFilters = values
+  queryFilters.value = values
   refreshQuery()
   display.value.filter = false
 }
 
-const formatPhoneNumber = (phone) => {
-  return phone.replace(/\D/g, "")
-}
-
 const onCheckInSubmit = ({ valid, values }) => {
   if (!valid) return
-  values.time = values.time.getTime()
-  values.property = formatPhoneNumber(values.property.number)
-  const id = ""
-
-  if (id != "") {
-    editCheckIn(id, values)
-  } else {
-    createCheckIn(values)   
-  }
-
-  try {
-    display.value.checkIn = false
-    refreshQuery()
-  } catch (err) {
-    console.log("ERROR: ", err)
-  }
-
+  if (isEdit.value) editCheckIn(initialCheckInValue.value.id, values)
+  else createCheckIn(values)
+  display.value.checkIn = false
+  isEdit.value = false
 }
 
 const updateProperty = (value) => {
-  if (value.name === "any") {
-    queryFilters.keywords = []
-  } else {
-    queryFilters.keywords = [value]
-  }
+  if (value.name === "all") queryFilters.value.property = ""
+  else queryFilters.value.property = value.number
+  refreshQuery()
 }
 
 onMounted(async () => {
-  if (!isLoaded) {
-    refreshQuery(queryFilters)
-    checkInQuestions.value[1].attributes.options = properties
-    isLoaded = true
-  }
+  refreshQuery()
 })
+
+watch(
+  () => properties.length,
+  (newLength) => {
+    if (newLength > 0) {
+      checkInQuestions.value[1].attributes.options = properties
+      propertyOptions.value = [...properties]
+      if (!propertyOptions.value.includes({name : "all"})) {
+        propertyOptions.value.unshift({name : "all"})
+      }
+    }
+  }
+)
+
 </script>
 
 <template>
@@ -159,21 +179,21 @@ onMounted(async () => {
   <div class="w-[80%] ml-auto mr-auto mt-[5rem] flex items-center">
     <span class="text-xl font-bold">Displaying check-ins for </span>
     <span class="text-xl font-bold px-2">
-      <Select :update:model-value="updateProperty" name="property" :options="selectProperty" optionLabel="name"
-        class="w-56" :default-value="All">
+      <Select v-on:update:model-value="updateProperty" :modelValue="selectedProperty" name="property" :options="propertyOptions" option-label="name"
+        class="w-56">
       </Select>
     </span>
   </div>
 
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <CheckInTable :values="checkIns" :columns="columns" editable filterable :open-form="openCheckIn" :open-filter="openFilterDialog" :del="deleteCheckIn" />
+    <SmartTable :values="checkIns" :columns="columns" editable filterable :open-form="openCheckIn" :open-filter="openFilterDialog" :del="deleteCheckIn" />
   </div>
 
   <!-- Check-In Dialog -->
-  <SmartDialog :onSubmit="onCheckInSubmit" :questions="checkInQuestions" v-model:visible="display.checkIn" header="Create or Edit Check In" />
+  <SmartDialog :onSubmit="onCheckInSubmit" :initial-values="initialCheckInValue" :questions="checkInQuestions" :visible="display.checkIn" @update:visible="hideCheckIn" header="Create or Edit Check In" />
   
   <!-- Filter Check In Dialog -->
-  <SmartDialog :onSubmit="onFilterSubmit" :questions="filterQuestions" v-model:visible="display.filter" header="Filters" />
+  <SmartDialog :onSubmit="onFilterSubmit" :initial-values="queryFilters" :questions="filterQuestions" :visible="display.filter" @update:visible="hideFilterDialog" header="Filters" />
 
 </template>

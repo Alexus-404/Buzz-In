@@ -15,7 +15,6 @@ const currentRouteName = computed(() => {
 const user = auth.currentUser;
 const userProfileUrl = user ? user.photoURL : null;
 
-const notifMenu = ref();
 const pfpMenu = ref();
 const accOptions = ref([
   {
@@ -32,9 +31,6 @@ const accOptions = ref([
   },
 ]);
 
-const notifToggle = (event) => {
-  notifMenu.value.toggle(event);
-};
 const pfpToggle = (event) => {
   pfpMenu.value.toggle(event);
 };
@@ -52,17 +48,6 @@ const pfpToggle = (event) => {
 
     <!-- Buttons -->
     <div class="flex justify-end items-center px-10 space-x-2">
-      <Button
-        icon="pi pi-bell"
-        text
-        rounded
-        class="text-primary"
-        aria-haspopup="true"
-        aria-controls="overlay_menu1"
-        @click="notifToggle"
-      />
-      <Menu ref="notifMenu" id="overlay_menu1" :popup="true" />
-
       <Avatar
         :image="userProfileUrl"
         :icon="!userProfileUrl ? 'pi pi-user' : null"
