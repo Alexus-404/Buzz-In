@@ -69,14 +69,12 @@ def open_door(userId: str, response):
         response.say(f"Played {property['dtmf']} key.")
 
 def record_call(userId: str, success: bool):
-    properties = db.reference(f"/users/{userId}/Properties").get() or {}
     dt = round(datetime.now(tz).timestamp())
 
     caller_id = str(request.form.get("From", ""))[1:]
-    property_info = properties.get(caller_id, {})
 
     callLogRef = db.reference(f"/users/{userId}/CallLog/{dt}")
     callLogRef.set({
-        "property": property_info,
+        "caller": caller_id,
         "success": success
     })

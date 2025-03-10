@@ -2,7 +2,6 @@ import AppLayout from "@/layout/AppLayout.vue";
 import { createWebHistory, createRouter } from "vue-router";
 import {auth} from "@/firebase"
 import { onAuthStateChanged } from "firebase/auth";
-import AccountLayout from "@/layout/AccountLayout.vue";
 
 const routes = [
   {
@@ -23,22 +22,6 @@ const routes = [
         path: "/properties",
         name: "Properties",
         component: () => import("../views/PropertiesView.vue"),
-      },
-      {
-        path: "/account",
-        component: AccountLayout,
-        children: [
-          {
-            path: "/account",
-            name: "Account",
-            component: () => import("../views/PropertiesView.vue"),
-          },
-          {
-            path: "/account/security",
-            name: "Security",
-            component: () => import("../views/PropertiesView.vue"),
-          },
-        ],
       },
     ],
     meta: { requiresAuth: true },

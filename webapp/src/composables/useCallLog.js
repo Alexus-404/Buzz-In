@@ -27,7 +27,7 @@ export function useCallLogs() {
         const callInfo = snapChild.val();
         const propertyRef = fbRef(
           db,
-          pathToUser + "/Properties/" + callInfo.number
+          pathToUser + "/Properties/" + callInfo.caller
         );
         callInfo.property = (await get(propertyRef)).val().name;
         callInfo.time = formatDate(new Date(Number(snapChild.key)));
@@ -39,7 +39,7 @@ export function useCallLogs() {
             callInfo.status = "❌";
             break;
         }
-  
+        console.log(callInfo) 
         callLogs.push(callInfo);
       });
     } catch (err) {

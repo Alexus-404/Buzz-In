@@ -1,8 +1,8 @@
 <script setup>
 import {computed} from 'vue'
 import {getAuth} from 'firebase/auth'
-import AppMenu from "./AppMenu.vue";
-import AppHeader from "./AppHeader.vue";
+import Sidebar from '../components/SideBar.vue';
+import TopBar from "../components/TopBar.vue";
 
 const auth = getAuth()
 const isLoggedIn = computed(() => auth.currentUser)
@@ -13,7 +13,7 @@ const isLoggedIn = computed(() => auth.currentUser)
   <!-- Top Bar -->
   <nav class="fixed top-0 left-0 right-0 z-10">
     <div class="w-full h-[50px] bg-surface border-b shadow-sm">
-      <app-header />
+      <TopBar />
     </div>
   </nav>
 
@@ -21,7 +21,7 @@ const isLoggedIn = computed(() => auth.currentUser)
   <div class="pt-[50px]">
     <!-- Side Bar-->
     <aside class="h-full fixed">
-      <app-menu />
+      <Sidebar />
     </aside>
 
     <!-- Main Content -->
