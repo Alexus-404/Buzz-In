@@ -1,6 +1,9 @@
 import {reactive} from 'vue'
 import { auth, db, ref as fbRef, get } from "@/firebase"
 import { formatDate } from "../services/formats"
+import { useProperties } from "@/composables/useProperties"
+
+const {properties} = useProperties()
 
 const user = auth.currentUser
 const pathToUser = `users/${user.uid}`
@@ -23,16 +26,14 @@ export function useCallLogs() {
   
       if (!snapshot.exists()) return []
   
-      snapshot.forEach(async (snapChild) => {
+      snapshot.forEach((snapChild) => {
         const callInfo = snapChild.val()
-        const propertyRef = fbRef(
-          db,
-          pathToUser + "/Properties/" + callInfo.caller
-        )
-        const foundProperty = (await get(propertyRef)).val()
+        const foundProperty = properties.find(property => {
+          return property.number = callInfo.caller
+        })
         callInfo.property = foundProperty ? foundProperty.name : "undefined"
         callInfo.time = formatDate(new Date(Number(snapChild.key)))
-        switch (callInfo.status) {
+        switch (callInfo.success) {
           case true:
             callInfo.status = "✅"
             break
@@ -40,7 +41,6 @@ export function useCallLogs() {
             callInfo.status = "❌"
             break
         }
-        console.log(callInfo) 
         callLogs.push(callInfo)
       })
     } catch (err) {
