@@ -1,1 +1,1 @@
-web: gunicorn server.app:flsk_app --log-file -
+web: gunicorn server.app:app --log-file -
