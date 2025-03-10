@@ -1,8 +1,9 @@
 <script setup>
-import logo from "@/assets/images/logo-generic.svg";
+import logo from "@/assets/images/logo.png";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { auth } from "@/firebase"; //TODO: Change to airbnb auth
+import { auth } from "@/firebase";
+import { signOut } from "firebase/auth";
 import { useLayout } from "@/composables/useLayout";
 
 const { toggleMenu } = useLayout();
@@ -18,17 +19,12 @@ const userProfileUrl = user ? user.photoURL : null;
 const pfpMenu = ref();
 const accOptions = ref([
   {
-    label: "Account Info",
+    label: "Log Out",
     command: () => {
-      router.push({ name: "Account" });
+      signOut(auth)
+      router.push("login")
     },
-  },
-  {
-    label: "Security",
-    command: () => {
-      router.push({ name: "Security" });
-    },
-  },
+  }
 ]);
 
 const pfpToggle = (event) => {
