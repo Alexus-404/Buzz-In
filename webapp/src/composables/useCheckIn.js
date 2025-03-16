@@ -42,7 +42,7 @@ export function useCheckIns() {
 
   const queryFilters = ref({
     order: "newest",
-    limit: 3,
+    limit: 5,
     minDate: new Date(Date.now() - GRACE_PERIOD),
     maxDate: new Date(Date.now() + MAX_DELTA),
     property: "",
