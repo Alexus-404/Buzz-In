@@ -29,7 +29,6 @@ GRACE_TIME = 2 * 3600
 # Simplifies timezone conversions rather than using local timezones
 tz = pytz.timezone("UTC")
 
-
 def get_incoming_number() -> str:
     """
     Extract and normalize the incoming phone number from the request.
@@ -39,7 +38,6 @@ def get_incoming_number() -> str:
     if raw_number.startswith('+'):
         raw_number = raw_number[1:]
     return ''.join(filter(str.isdigit, raw_number))
-
 
 def inbound_call():
     """
@@ -127,6 +125,10 @@ def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
             response.play(digits=dtmf_digits)
             response.say(f"Played {dtmf_digits} key.")
 
+def increment_counter(current_value):
+    if current_value is None:
+        return 1
+    return current_value + 1
 
 def record_call(user_id: str, incoming_number: str, success: bool):
     """
@@ -143,5 +145,5 @@ def record_call(user_id: str, incoming_number: str, success: bool):
         "success": success
     })
     historic_call_count_ref = db.reference(f"/users/{user_id}/HistoricCallCount")
-    historic_call_count_ref.set(firebase_admin.db.ServerValue.increment(1))
+    historic_call_count_ref.transaction(increment_counter)
 
