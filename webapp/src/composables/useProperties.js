@@ -56,7 +56,7 @@ export function useProperties() {
   const submitProperty = async (property) => {
     try {
       await set(getPropertyRef(property.number), property)
-      await set(getPhoneListRef(property.number), auth.uid)
+      await set(getPhoneListRef(property.number), user.uid)
       await refreshProperties()
     } catch (err) {
       console.error("Error submitting property:", err)
