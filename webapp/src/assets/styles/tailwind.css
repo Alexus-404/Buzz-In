@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap');
 
-
 @import "tailwindcss";
 @plugin "tailwindcss-primeui";
+
+@custom-variant hover (&:hover);
+
 
 @layer base {
   html {

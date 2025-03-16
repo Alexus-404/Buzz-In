@@ -4,6 +4,7 @@ import {set, remove} from "firebase/database"
 import { phoneToNumber, formatPhoneNumber } from "@/services/formats"
 
 const user = auth.currentUser
+const pathToPhoneList = "permittedNumbers"
 const pathToUser = `users/${user.uid}`
 const propertiesPath = `${pathToUser}/Properties`
 const dbRef = fbRef(db, propertiesPath)
@@ -31,6 +32,7 @@ export function useProperties() {
   ]
 
   const getPropertyRef = (pId) => fbRef(db,propertiesPath + "/" + phoneToNumber(pId))
+  const getPhoneListRef = (pId) => fbRef(db, pathToPhoneList + "/" + phoneToNumber(pId))
 
   const refreshProperties = async () => {
     properties.length = 0
@@ -54,6 +56,7 @@ export function useProperties() {
   const submitProperty = async (property) => {
     try {
       await set(getPropertyRef(property.number), property)
+      await set(getPhoneListRef(property.number), auth.uid)
       await refreshProperties()
     } catch (err) {
       console.error("Error submitting property:", err)
@@ -63,6 +66,7 @@ export function useProperties() {
   const deleteProperty = async (property) => {
     try {
       await remove(getPropertyRef(property.number))
+      await remove(getPhoneListRef(property.number))
       await refreshProperties()
     } catch (err) {
       console.error("Error deleting property:", err)

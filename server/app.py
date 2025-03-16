@@ -27,7 +27,7 @@ firebase_app = firebase_admin.initialize_app(cred, {
 
 # Import route handlers from other modules.
 from server.callHandler import inbound_call
-from server.invalidateExpired import invalidate_expired
+from server.scheduled_clean import clean_entries
 
 @app.route('/call', methods=["POST"])
 def handle_call():
@@ -42,12 +42,12 @@ def handle_call():
 @app.route('/invalidate-expired')
 def handle_expired():
     """
-    Route to remove or invalidate expired entries.
+    Route to remove or invalidate expired entries and recount entries.
     
-    Calls 'invalidate_expired' from the corresponding module,
+    Calls 'clean_entries' from the corresponding module,
     which processes and cleans up expired data entries.
     """
-    return invalidate_expired()
+    return clean_entries()
 
 if __name__ == '__main__':
     app.run(debug=True)

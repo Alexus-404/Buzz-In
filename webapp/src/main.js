@@ -23,6 +23,7 @@ import {
   DatePicker,
   InputMask,
   InputNumber,
+  Paginator
 } from "primevue";
 import { Form } from "@primevue/forms";
 
@@ -51,5 +52,6 @@ const app = createApp(App)
   .component("DatePicker", DatePicker)
   .component("InputMask", InputMask)
   .component("InputNumber", InputNumber)
+  .component("Paginator", Paginator)
 
 app.mount("#app");

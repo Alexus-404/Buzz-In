@@ -51,7 +51,10 @@ const questions = [
   },
 ]
 
-const openProperty = () => {
+const initialPropertyValue = ref({})
+
+const openProperty = ({data}) => {
+  initialPropertyValue.value = {...data}
   showPropertyModal.value = true
 }
 
@@ -77,5 +80,5 @@ const onSubmitProperty = ({ valid, values }) => {
     <SmartTable :values="properties" :columns="columns" editable :open-form="openProperty" :del="deleteProperty" />
   </div>
 
-  <SmartDialog :onSubmit="onSubmitProperty" :questions="questions" v-model:visible="showPropertyModal" header="Property"/>
+  <SmartDialog :onSubmit="onSubmitProperty" :initial-values="initialPropertyValue" :questions="questions" v-model:visible="showPropertyModal" header="Property"/>
 </template>

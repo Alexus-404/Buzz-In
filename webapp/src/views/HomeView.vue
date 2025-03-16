@@ -1,36 +1,47 @@
 <script setup>
-import { ref, onMounted, watch } from "vue"
-import {z} from 'zod'
+import { ref, onMounted, watch, computed } from "vue"
+import { z } from 'zod'
 import { useCheckIns } from "@/composables/useCheckIn"
 import { useProperties } from "@/composables/useProperties"
 import SmartTable from "@/components/SmartTable.vue"
 import SmartDialog from "@/components/SmartDialog.vue"
 
-const {queryFilters, columns, orderOptions, checkIns, refreshQuery, deleteCheckIn, editCheckIn, createCheckIn} = useCheckIns()
-const {properties} = useProperties()
+const { queryFilters, columns, orderOptions, checkIns,
+        currentPage, totalRows, loadFirstPage, loadNextPage, loadPrevPage,
+        deleteCheckIn, editCheckIn, createCheckIn } = useCheckIns()
+
+const { properties } = useProperties()
 
 const GRACE_PERIOD = 2 * 60 * 60 * 1000 //able to check in 2 hours away from check in time
 const propertyOptions = ref([]) //to be populated with other properties
 const selectedProperty = ref({
-  name : "all"
+  name: "all"
 }) //default value
 const initialCheckInValue = ref({})
 const isEdit = ref(false)
 
+const paginator = ref({
+  currentPage: currentPage, //passed in from useCheckIn script
+  rows: computed(() => queryFilters.value.limit),
+  totalRecords: totalRows,
+  onNextPage: loadNextPage,
+  onPrevPage: loadPrevPage
+})
+
 const checkInQuestions = ref([
   {
     name: "name",
-    label:"Guest Name",
+    label: "Guest Name",
     placeholder: "Input guest name",
     type: "text",
-    schema: z.string().min(1, {message: "Guest name is required!"}),
+    schema: z.string().min(1, { message: "Guest name is required!" }),
     attributes: {
-      autofocus : true,
+      autofocus: true,
     }
   },
   {
     name: "property",
-    label:"Property",
+    label: "Property",
     placeholder: "Select a property",
     type: "select",
     schema: z.object({
@@ -47,24 +58,24 @@ const checkInQuestions = ref([
   },
   {
     name: "time",
-    label:"Check-In Time",
+    label: "Check-In Time",
     type: "datetime",
-    schema: z.date({invalid_type_error: "Invalid date."}),
+    schema: z.date({ invalid_type_error: "Invalid date." }),
     attributes: {
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
       showTime: true,
       hourFormat: "12",
     }
-  }, 
+  },
 ])
 
 const filterQuestions = ref([
   {
     name: "order",
-    label:"Order By",
+    label: "Order By",
     type: "select",
-    schema: z.string().min(1, {message: "Valid order required!"}),
+    schema: z.string().min(1, { message: "Valid order required!" }),
     attributes: {
       "v-model": queryFilters.value.order,
       options: orderOptions
@@ -72,9 +83,9 @@ const filterQuestions = ref([
   },
   {
     name: "minDate",
-    label:"After:",
+    label: "After:",
     type: "datetime",
-    schema: z.date({invalid_type_error: "Invalid date."}),
+    schema: z.date({ invalid_type_error: "Invalid date." }),
     attributes: {
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
@@ -84,9 +95,9 @@ const filterQuestions = ref([
   },
   {
     name: "maxDate",
-    label:"Before:",
+    label: "Before:",
     type: "datetime",
-    schema: z.date({invalid_type_error: "Invalid date."}),
+    schema: z.date({ invalid_type_error: "Invalid date." }),
     attributes: {
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
@@ -96,23 +107,21 @@ const filterQuestions = ref([
   },
   {
     name: "limit",
-    label:"Display",
+    label: "Display",
     type: "number",
     schema: z.number({
       required_error: "Display limit is required.",
       invalid_type_error: "Display limit must be a number."
-    }),
+    }).gte(1).lte(50),
     attributes: {
       inputId: "integeronly",
-      min: 25,
-      max: 50,
     }
-  },    
+  },
 ])
 
 const display = ref({
-  checkIn : false,
-  filter : false,
+  checkIn: false,
+  filter: false,
 })
 
 const openFilterDialog = () => {
@@ -123,8 +132,8 @@ const hideFilterDialog = () => {
   display.value.filter = false
 }
 
-const openCheckIn = ({data, edit}) => {
-  if (edit) initialCheckInValue.value = {...data}
+const openCheckIn = ({ data, edit }) => {
+  if (edit) initialCheckInValue.value = { ...data }
   display.value.checkIn = true
 
   isEdit.value = edit
@@ -137,7 +146,7 @@ const hideCheckIn = () => {
 const onFilterSubmit = async ({ valid, values }) => {
   if (!valid) return
   queryFilters.value = values
-  refreshQuery()
+  loadFirstPage()
   display.value.filter = false
 }
 
@@ -152,11 +161,11 @@ const onCheckInSubmit = ({ valid, values }) => {
 const updateProperty = (value) => {
   if (value.name === "all") queryFilters.value.property = ""
   else queryFilters.value.property = value.number
-  refreshQuery()
+  loadFirstPage()
 }
 
 onMounted(async () => {
-  refreshQuery()
+  loadFirstPage()
 })
 
 watch(
@@ -165,8 +174,8 @@ watch(
     if (newLength > 0) {
       checkInQuestions.value[1].attributes.options = properties
       propertyOptions.value = [...properties]
-      if (!propertyOptions.value.includes({name : "all"})) {
-        propertyOptions.value.unshift({name : "all"})
+      if (!propertyOptions.value.includes({ name: "all" })) {
+        propertyOptions.value.unshift({ name: "all" })
       }
     }
   }
@@ -179,21 +188,24 @@ watch(
   <div class="w-[80%] ml-auto mr-auto mt-[5rem] flex items-center">
     <span class="text-xl font-bold">Displaying check-ins for </span>
     <span class="text-xl font-bold px-2">
-      <Select v-on:update:model-value="updateProperty" :modelValue="selectedProperty" name="property" :options="propertyOptions" option-label="name"
-        class="w-56">
+      <Select v-on:update:model-value="updateProperty" :modelValue="selectedProperty" name="property"
+        :options="propertyOptions" option-label="name" class="w-56">
       </Select>
     </span>
   </div>
 
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <SmartTable :values="checkIns" :columns="columns" editable filterable :open-form="openCheckIn" :open-filter="openFilterDialog" :del="deleteCheckIn" />
+    <SmartTable :values="checkIns" :columns="columns" editable filterable paginated :paginator :open-form="openCheckIn"
+      :open-filter="openFilterDialog" :del="deleteCheckIn" />
   </div>
 
   <!-- Check-In Dialog -->
-  <SmartDialog :onSubmit="onCheckInSubmit" :initial-values="initialCheckInValue" :questions="checkInQuestions" :visible="display.checkIn" @update:visible="hideCheckIn" header="Create or Edit Check In" />
-  
+  <SmartDialog :onSubmit="onCheckInSubmit" :initial-values="initialCheckInValue" :questions="checkInQuestions"
+    :visible="display.checkIn" @update:visible="hideCheckIn" header="Create or Edit Check In" />
+
   <!-- Filter Check In Dialog -->
-  <SmartDialog :onSubmit="onFilterSubmit" :initial-values="queryFilters" :questions="filterQuestions" :visible="display.filter" @update:visible="hideFilterDialog" header="Filters" />
+  <SmartDialog :onSubmit="onFilterSubmit" :initial-values="queryFilters" :questions="filterQuestions"
+    :visible="display.filter" @update:visible="hideFilterDialog" header="Filters" />
 
 </template>

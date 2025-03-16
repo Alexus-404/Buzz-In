@@ -1,6 +1,8 @@
 <script setup>
 import {ref} from 'vue'
-const {values, columns, editable, filterable, exportable, openForm, openFilter, del} = defineProps({
+import TablePaginator from './TablePaginator.vue'
+
+const {values, paginator, columns, editable, filterable, exportable, paginated, openForm, openFilter, del} = defineProps({
     values: {
         type: Array,
         required: true
@@ -12,9 +14,13 @@ const {values, columns, editable, filterable, exportable, openForm, openFilter, 
         }],
         required: true
     },
+    paginator: {
+      type: Object
+    },
     editable: Boolean,
     filterable: Boolean,
     exportable: Boolean,
+    paginated: Boolean,
     openForm: {
         type: Function,
     },
@@ -58,4 +64,6 @@ const exportCSV = () => {
         </template>
       </Column>
     </DataTable>
+
+    <TablePaginator v-if="paginated" v-bind="{...paginator}" />
 </template>

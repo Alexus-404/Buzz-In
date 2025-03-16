@@ -48,7 +48,8 @@ const logInWithGoogle = async () => {
 const register = async (user) => {
   const userRef = fbRef(db, "users/" + user.uid)
   set(userRef, {
-    email: user.email,
+    "ConcurrentCheckIns" : 0,
+    "HistoricCallCount" : 0
   })
 }
 </script>

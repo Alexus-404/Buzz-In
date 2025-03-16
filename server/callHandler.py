@@ -140,3 +140,6 @@ def record_call(user_id: str, incoming_number: str, success: bool):
         "caller": incoming_number,
         "success": success
     })
+    historic_call_count_ref = db.reference(f"/users/{user_id}/HistoricCallCount")
+    historic_call_count_ref.set(db.ServerValue.increment(1))
+
