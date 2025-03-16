@@ -8,6 +8,7 @@ Purpose:
 """
 
 from flask import request
+import firebase_admin
 from firebase_admin import db
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
@@ -142,5 +143,5 @@ def record_call(user_id: str, incoming_number: str, success: bool):
         "success": success
     })
     historic_call_count_ref = db.reference(f"/users/{user_id}/HistoricCallCount")
-    historic_call_count_ref.set(db.ServerValue.increment(1))
+    historic_call_count_ref.set(firebase_admin.db.ServerValue.increment(1))
 
