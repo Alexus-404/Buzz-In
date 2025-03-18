@@ -1,5 +1,6 @@
 import { reactive } from "vue"
 import { auth, db, ref as fbRef, get } from "@/firebase"
+import { useToast } from "primevue"
 import {set, remove} from "firebase/database"
 import { phoneToNumber, formatPhoneNumber } from "@/services/formats"
 
@@ -10,6 +11,7 @@ const propertiesPath = `${pathToUser}/Properties`
 const dbRef = fbRef(db, propertiesPath)
 
 export function useProperties() {
+  const toast = useToast()
   const properties = reactive([])
   const columns = [
     {
@@ -48,8 +50,12 @@ export function useProperties() {
         properties.push(property)
       })
     } catch (err) {
-      console.error("Error fetching properties:", err)
-      return
+      toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed refreshing properties",
+        life: 3000
+      })
     }
   }
 
@@ -59,7 +65,12 @@ export function useProperties() {
       await set(getPhoneListRef(property.number), user.uid)
       await refreshProperties()
     } catch (err) {
-      console.error("Error submitting property:", err)
+      toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed submitting property",
+        life: 3000
+      })
     }
   }
 
@@ -69,7 +80,12 @@ export function useProperties() {
       await remove(getPhoneListRef(property.number))
       await refreshProperties()
     } catch (err) {
-      console.error("Error deleting property:", err)
+      toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed deleting property",
+        life: 3000
+      })
     }
   }
 

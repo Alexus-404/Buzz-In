@@ -11,10 +11,9 @@ import {
   endAt,
 } from "firebase/database"
 import { getStatus } from "@/services/getStatus"
-import { useProperties } from "@/composables/useProperties"
 import { phoneToNumber } from "@/services/formats"
-
-const { properties } = useProperties()
+import { useProperties } from "@/composables/useProperties"
+import { useToast } from 'primevue/usetoast'
 
 const MAX_DELTA = 30 * 24 * 60 * 60 * 1000 // up to 30 days ahead
 const GRACE_PERIOD = 2 * 60 * 60 * 1000      // allow check-in within 2 hours
@@ -27,6 +26,9 @@ const dbRef = fbRef(db, checkInsPath)
 const concurrentCheckInsRef = fbRef(db, concurrentCheckInsPath)
 
 export function useCheckIns() {
+  const { properties } = useProperties()
+  const toast = useToast()
+  
   const checkIns = reactive([])
   const totalRows = ref(0)
   const currentPage = ref(0)
@@ -51,18 +53,23 @@ export function useCheckIns() {
   // Returns a database reference for a given check-in ID
   const getCheckInRef = (cid) => fbRef(db, `${checkInsPath}/${cid}`)
 
-  // Process and push a single check-in from a snapshot
+  // Normalizes and formats a check-in entry from database to be displayed in
   const processCheckIn = (snapChild) => {
     const checkIn = snapChild.val()
     // Filter based on property if one is specified
     if (!queryFilters.value.property || checkIn.property === queryFilters.value.property) {
+      //Normalize check-in data for displaying
       checkIn.id = snapChild.key
       checkIn.time = new Date(checkIn.time)
       checkIn.status = getStatus(checkIn.time)
+
+      //Assign a property name to check-in, or undefined if none
       const foundProperty = [...properties].find(
         (obj) => phoneToNumber(obj.number) === checkIn.property
       )
       checkIn.property = foundProperty ? foundProperty.name : "undefined"
+
+      //Push check-in to datatable values
       checkIns.push(checkIn)
     }
   }
@@ -77,18 +84,34 @@ export function useCheckIns() {
       }
       totalRows.value = delta + rowCount
     } catch (err) {
-      console.error("Error updating rows:", err)
+      toast.add({
+        severity: "error",
+        summary: err,
+        detail: "Failed updating rows",
+        life: 3000
+      })
     }
   }
 
-  // Create a firebase query based on the paging state
-  const getQueryFilters = (state) => {
+  // Returns a firebase query based on paging direction and filter params
+  const getQueryFilters = (direction) => {
+    //Local values renamed for readability within function
     const { order, limit, minDate, maxDate } = queryFilters.value
     const minTime = minDate.valueOf() - GRACE_PERIOD
     const maxTime = maxDate.valueOf()
+
+    /*Initialize query filter parameters.
+      start      - unix timestamp of minimum time check-ins must begin at
+      end        - unix timestamp of maximum time check-ins must end at
+      limitQuery - numerical value representing how many check-ins to get
+    */
     let start, end, limitQuery
 
-    switch (state) {
+    //Handles "first", "next", and "previous" directions.
+    //Defines custom actions depending on sort order of filters
+    //Switch statement for control flow
+    switch (direction) {
+      //If loading first page, restrict to min and max times
       case "first":
         start = startAt(minTime)
         end = endAt(maxTime)
@@ -96,6 +119,7 @@ export function useCheckIns() {
           ? limitToLast(limit)
           : limitToFirst(limit)
         break
+      //If loading next page, restrict relative to position of end-cursor
       case "next":
         if (order === "oldest") {
           start = startAt(minTime)
@@ -107,6 +131,7 @@ export function useCheckIns() {
           limitQuery = limitToFirst(limit + 1)
         }
         break
+      //If loading previous page, restrict relative to position of start-cursor
       case "previous":
         if (order === "oldest") {
           start = startAt(currentPageFirst.valueOf())
@@ -118,20 +143,29 @@ export function useCheckIns() {
           limitQuery = limitToLast(limit + 1)
         }
         break
-      default:
+      default: //error if state is none of above
         throw new Error("Invalid paging state")
     }
 
+    //return values as a firebase query object with parameters
     return fbQuery(dbRef, orderByChild("time"), start, end, limitQuery)
   }
 
-  // Unified paging loader
+  // Unified paging loader for all directions (first, next, and previous page)
+  //Gets data from queries --> pre-processes data based on direction --> updates cursor
   const loadPage = async (direction, updatePageCounter) => {
+    //Clears check-ins array to populate with new values
     checkIns.length = 0
+
+    //Updates current page value based on direction
     updatePageCounter()
 
+    //try block to catch errors
     try {
+      //Dynamically update query filters based on direction of page load
       const dbQuery = getQueryFilters(direction)
+
+      //Gets data from firebase, then organizes data based on queryFilters
       const snapshot = await get(dbQuery)
       snapshot.forEach(processCheckIn)
 
@@ -142,18 +176,26 @@ export function useCheckIns() {
         queryFilters.value.order === "oldest" ? checkIns.shift() : checkIns.pop()
       }
 
+      //guard clause to ensure that array is not empty
+      if (!checkIns.length) return
+
       // Reverse the order if displaying oldest first
       if (queryFilters.value.order === "oldest") {
         checkIns.reverse()
       }
 
-      if (checkIns.length) {
-        currentPageFirst = checkIns[0].time
-        currentPageLast = checkIns[checkIns.length - 1].time
-      }
+      //Updates a running "cursor" as refernece for future page requests
+      //Tracks timestamps of first and last check-ins
+      currentPageFirst = checkIns[0].time
+      currentPageLast = checkIns[checkIns.length - 1].time
       
-    } catch (err) {
-      console.error("Error fetching check-ins:", err)
+    } catch (err) { //ensures errors during fetching process are caught
+      toast.add({
+        severity: "error",
+        summary: err,
+        detail: "Failed loading page",
+        life: 3000
+      })   
     }
   }
 
@@ -175,41 +217,74 @@ export function useCheckIns() {
     })
   }
 
+  //removes check-in from database, in case guest cancels their booking
   const deleteCheckIn = async (checkIn) => {
     try {
+      //removes check-in from database. if none, throw error
       await remove(getCheckInRef(checkIn.id))
+
+      //refreshes the datatable on webpage
       await loadFirstPage()
+
+      //Subtracts total row count by one
       await updateTotalRows(-1)
-    } catch (err) {
-      console.error("Error deleting check-in:", err)
+    } catch (err) { //catch errors during delete process and output to user
+      toast.add({
+        severity: "error",
+        summary: err,
+        detail: "Failed deleting check-in",
+        life: 3000
+      })
     }
   }
 
+  //Creates a check in upon user submits a form
+  //Asynchronous to allow multiple processes to run simultaneously
   const createCheckIn = async (checkIn) => {
     // Normalize time and property values for storage
     checkIn.time = checkIn.time.getTime()
     checkIn.property = checkIn.property.number
 
+    //wrap in try block for error handling
     try {
+      //Gets reference in database from path, generating a unique ID
       const newCheckInRef = push(fbRef(db, checkInsPath))
       await set(newCheckInRef, checkIn)
+      
+      //refreshes the datatable on webpage
       await loadFirstPage()
+      //Increments total row count of datatable by one
       await updateTotalRows(1)
-    } catch (err) {
-      console.error("Error creating check-in:", err)
+    } catch (err) { //catch errors during write process of database
+      toast.add({
+        severity: "error",
+        summary: err,
+        detail: "Failed creating check-in",
+        life: 3000
+      })    
     }
   }
 
+  //Edits existing check-in and updates their values
+  //takes in their unique ID and new values
   const editCheckIn = async (cid, checkIn) => {
     // Normalize time and property values for storage
     checkIn.time = checkIn.time.getTime()
     checkIn.property = checkIn.property.number
 
     try {
+      //awaits to set new values into existing ID
       await set(getCheckInRef(cid), checkIn)
+
+      //refreshes the datatable on webpage
       await loadFirstPage()
-    } catch (err) {
-      console.error("Error editing check-in:", err)
+    } catch (err) { //try-catch block to catch exceptions
+      toast.add({
+        severity: "error",
+        detail: `Failed editing check-in of id ${cid}. Please try again`,
+        summary: err,
+        life: 3000
+      })
     }
   }
 

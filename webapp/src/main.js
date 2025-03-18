@@ -9,6 +9,7 @@ import "./firebase.js";
 import Theme from "./assets/themes/theme.js";
 
 import PrimeVue from "primevue/config";
+import ToastService from "primevue/toastservice";
 import {
   Button,
   ButtonGroup,
@@ -23,7 +24,8 @@ import {
   DatePicker,
   InputMask,
   InputNumber,
-  Paginator
+  Paginator,
+  Toast,
 } from "primevue";
 import { Form } from "@primevue/forms";
 
@@ -38,6 +40,7 @@ const app = createApp(App)
       },
     },
   })
+  .use(ToastService)
   .component("Form", Form)
   .component("Button", Button)
   .component("ButtonGroup", ButtonGroup)
@@ -53,5 +56,6 @@ const app = createApp(App)
   .component("InputMask", InputMask)
   .component("InputNumber", InputNumber)
   .component("Paginator", Paginator)
+  .component("Toast", Toast)
 
 app.mount("#app");

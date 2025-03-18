@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, computed} from 'vue'
 import TablePaginator from './TablePaginator.vue'
 
 const {values, paginator, columns, editable, filterable, exportable, paginated, openForm, openFilter, del} = defineProps({
@@ -37,6 +37,8 @@ const dataTable = ref()
 const exportCSV = () => {
   dataTable.value.exportCSV()
 }
+
+const showMessage = computed(() => (values ?? []).length == 0);
 </script>
 
 <template>
@@ -64,6 +66,8 @@ const exportCSV = () => {
         </template>
       </Column>
     </DataTable>
+
+    <span v-show="showMessage">No results. Please broaden your filters.</span>
 
     <TablePaginator v-if="paginated" v-bind="{...paginator}" />
 </template>

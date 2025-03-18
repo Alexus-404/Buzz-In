@@ -8,15 +8,18 @@ Purpose:
 """
 
 from flask import request
-import firebase_admin
 from firebase_admin import db
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse
-import os
+
 from datetime import datetime
 import pytz
 
-# Initialize Twilio client with environment variables
+import os
+
+#Dependency Imports
+from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse
+
+# Initialize Twilio client with custom authentication key, hidden with env variables
 client = Client(os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
 
 # Firebase reference for permitted numbers
@@ -116,14 +119,16 @@ def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
     """
     Opens the door for the user by playing the corresponding DTMF tones.
     """
+
+    #Get dtmf tone for corresponding property
     properties = db.reference(f"/users/{user_id}/Properties").get() or {}
     property_data = properties.get(incoming_number)
 
+    #If it exists, then play the dtmf and grant access to apartment
     if property_data:
         dtmf_digits = property_data.get("dtmf")
         if dtmf_digits:
             response.play(digits=dtmf_digits)
-            response.say(f"Played {dtmf_digits} key.")
 
 def increment_counter(current_value):
     if current_value is None:
@@ -137,7 +142,7 @@ def record_call(user_id: str, incoming_number: str, success: bool):
     Each log entry is stored under a timestamp key (in milliseconds).
     The record includes the caller's number and whether the call was successful.
     """
-    # Current timestamp in milliseconds.
+    # Current timestamp in milliseconds.    
     timestamp_ms = round(datetime.now(tz).timestamp()) * 1000
     call_log_ref = db.reference(f"/users/{user_id}/CallLog/{timestamp_ms}")
     call_log_ref.set({

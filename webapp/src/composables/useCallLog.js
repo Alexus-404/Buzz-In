@@ -2,8 +2,7 @@ import {reactive} from 'vue'
 import { auth, db, ref as fbRef, get } from "@/firebase"
 import { formatDate } from "../services/formats"
 import { useProperties } from "@/composables/useProperties"
-
-const {properties} = useProperties()
+import { useToast } from 'primevue/usetoast'
 
 const user = auth.currentUser
 const pathToUser = `users/${user.uid}`
@@ -11,6 +10,8 @@ const callLogPath = `${pathToUser}/CallLog`
 const dbRef = fbRef(db, callLogPath)
 
 export function useCallLogs() {
+  const {properties} = useProperties()
+  const toast = useToast()
   const callLogs = reactive([])
 
   const columns = [
@@ -44,7 +45,12 @@ export function useCallLogs() {
         callLogs.push(callInfo)
       })
     } catch (err) {
-      console.error("Error fetching call log:", err)
+      toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed refreshing call log",
+        life: 3000
+      })
     }
   }
 

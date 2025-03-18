@@ -1,14 +1,18 @@
 <script setup>
 import { ref } from "vue"
 import {z} from 'zod'
-import validator from "validator"
 import { useProperties } from "@/composables/useProperties"
+import { useToast } from "primevue"
 
 import SmartDialog from "@/components/SmartDialog.vue"
 import SmartTable from "@/components/SmartTable.vue"
 
+import { numberRegex } from "@/services/formats" 
+
 const { properties, columns, deleteProperty, submitProperty } = useProperties()
 const showPropertyModal = ref(false)
+
+const toast = useToast()
 
 const questions = [
 {
@@ -44,7 +48,7 @@ const questions = [
     name: "number",
     label:"Condo Phone Number",
     type: "mask",
-    schema: z.string().refine(validator.isMobilePhone, {message: "Invalid phone number!"}),
+    schema: z.string().regex(new RegExp(numberRegex), "Invalid phone number!"),
     attributes: {
       mask: "+9 (999) 999-9999"
     }
@@ -64,7 +68,12 @@ const onSubmitProperty = ({ valid, values }) => {
     submitProperty(values)
     showPropertyModal.value = false
   } catch (err) {
-    console.error("ERROR: ", err)
+    toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed submitting property",
+        life: 3000
+    })
   }
 }
 </script>

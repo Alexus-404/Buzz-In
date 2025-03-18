@@ -1,7 +1,8 @@
+const numberRegex = /^\+\d{1,3} \(\d{3}\) \d{3}-\d{4}$/;
+
 function phoneToNumber(phone) {
   return phone.replace(/\D/g, "")
 }
-
 function formatPhoneNumber(number) {
     let countryCode = number[0]
     const localNumber = number.substring(number.length - 10)
@@ -19,4 +20,4 @@ const formatDate = (date) => {
   })
 }
 
-export { phoneToNumber, formatPhoneNumber, formatDate }
+export { phoneToNumber, formatPhoneNumber, formatDate, numberRegex }
