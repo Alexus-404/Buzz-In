@@ -68,6 +68,7 @@ def inbound_call():
     # Rejects call if number is not permitted
 
     if incoming_number not in permitted_numbers:
+        response.say("You are not a registered property. Rejecting.")
         response.reject(reason="Not permitted.")
         return str(response)
 
