@@ -43,6 +43,7 @@ export function useCallLogs() {
             break
         }
         callLogs.push(callInfo)
+        callLogs.reverse()
       })
     } catch (err) {
       toast.add({

@@ -83,6 +83,7 @@ export function useCheckIns() {
         await set(concurrentCheckInsRef, delta + rowCount)
       }
       totalRows.value = delta + rowCount
+      console.log(totalRows.value)
     } catch (err) {
       toast.add({
         severity: "error",
