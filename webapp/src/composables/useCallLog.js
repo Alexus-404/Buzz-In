@@ -1,5 +1,6 @@
 import {reactive} from 'vue'
 import { auth, db, ref as fbRef, get } from "@/firebase"
+import { orderByKey, query } from 'firebase/database'
 import { formatDate } from "../services/formats"
 import { useProperties } from "@/composables/useProperties"
 import { useToast } from 'primevue/usetoast'
@@ -23,7 +24,7 @@ export function useCallLogs() {
   const refreshCalls = async () => {
     callLogs.length = 0
     try {
-      const snapshot = await get(dbRef)
+      const snapshot = await get(query(dbRef, orderByKey()))
   
       if (!snapshot.exists()) return []
   
@@ -43,8 +44,9 @@ export function useCallLogs() {
             break
         }
         callLogs.push(callInfo)
-        callLogs.reverse()
       })
+
+      callLogs.reverse()
     } catch (err) {
       toast.add({
         severity: "error",

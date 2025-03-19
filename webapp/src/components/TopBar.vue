@@ -33,7 +33,7 @@ const pfpToggle = (event) => {
 </script>
 
 <template>
-  <div class="h-full flex items-center justify-between bg-surface">
+  <div class="h-full flex items-center justify-between bg-white z-10">
     <!-- Path -->
     <span class="flex items-center h-full overflow-hidden gap-2">
       <Button icon="pi pi-bars" text rounded @click="toggleMenu" />

@@ -83,7 +83,6 @@ export function useCheckIns() {
         await set(concurrentCheckInsRef, delta + rowCount)
       }
       totalRows.value = delta + rowCount
-      console.log(totalRows.value)
     } catch (err) {
       toast.add({
         severity: "error",
@@ -252,10 +251,19 @@ export function useCheckIns() {
       const newCheckInRef = push(fbRef(db, checkInsPath))
       await set(newCheckInRef, checkIn)
       
+      toast.add({
+        severity: "error",
+        summary: `Error with check-in`,
+        detail: "Failed creating check-in",
+        life: 3000
+      })   
+
+      /*
       //refreshes the datatable on webpage
       await loadFirstPage()
       //Increments total row count of datatable by one
       await updateTotalRows(1)
+      */
     } catch (err) { //catch errors during write process of database
       toast.add({
         severity: "error",
