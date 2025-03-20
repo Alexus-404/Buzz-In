@@ -31,7 +31,7 @@ export function useCallLogs() {
       snapshot.forEach((snapChild) => {
         const callInfo = snapChild.val()
         const foundProperty = properties.find(property => {
-          return property.number = callInfo.caller
+          return property.number == callInfo.caller
         })
         callInfo.property = foundProperty ? foundProperty.name : "undefined"
         callInfo.time = formatDate(new Date(Number(snapChild.key)))
