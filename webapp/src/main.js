@@ -1,6 +1,8 @@
+//Stylings
 import "./assets/styles/tailwind.css";
 import "primeicons/primeicons.css";
 
+//Import app
 import { createApp } from "vue";
 import router from "./router/router.js";
 import App from "./App.vue";
@@ -8,6 +10,7 @@ import App from "./App.vue";
 import "./firebase.js";
 import Theme from "./assets/themes/theme.js";
 
+//Primevue imports and custom components
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import {
@@ -29,6 +32,7 @@ import {
 } from "primevue";
 import { Form } from "@primevue/forms";
 
+//Initialize app
 const app = createApp(App)
   .use(router)
   .use(PrimeVue, {

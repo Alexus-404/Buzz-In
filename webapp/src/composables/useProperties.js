@@ -4,15 +4,21 @@ import { useToast } from "primevue"
 import {set, remove} from "firebase/database"
 import { phoneToNumber, formatPhoneNumber } from "@/services/formats"
 
+// Get current authenticated user
 const user = auth.currentUser
+
+// Define paths for easy reference to Firebase database
 const pathToPhoneList = "permittedNumbers"
 const pathToUser = `users/${user.uid}`
 const propertiesPath = `${pathToUser}/Properties`
 const dbRef = fbRef(db, propertiesPath)
 
+// Composable function to manage properties
 export function useProperties() {
   const toast = useToast()
-  const properties = reactive([])
+  const properties = reactive([]) //reactive array - stores properties
+
+  // Table columns config
   const columns = [
     {
       field: "name",
@@ -33,16 +39,19 @@ export function useProperties() {
     },
   ]
 
+  // Helper functions: gets firebase references
   const getPropertyRef = (pId) => fbRef(db,propertiesPath + "/" + phoneToNumber(pId))
   const getPhoneListRef = (pId) => fbRef(db, pathToPhoneList + "/" + phoneToNumber(pId))
 
+  // Function to refresh properties from firebase
   const refreshProperties = async () => {
-    properties.length = 0
+    properties.length = 0 //clears existing properties
     try {
       const snapshot = await get(dbRef)
   
-      if (!snapshot.exists()) return
+      if (!snapshot.exists()) return //exit if no data
   
+      // Processes each property, and then adds it to properties array
       snapshot.forEach((snapChild) => {
         const property = snapChild.val()  
         property.number = snapChild.key
@@ -50,6 +59,7 @@ export function useProperties() {
         properties.push(property)
       })
     } catch (err) {
+      // Error toast if failed refresh
       toast.add({
         severity: "error",
         detail: err,
@@ -59,10 +69,11 @@ export function useProperties() {
     }
   }
 
+  // Function to submit a new OR updated property to Firebase
   const submitProperty = async (property) => {
     try {
-      await set(getPropertyRef(property.number), property)
-      await set(getPhoneListRef(property.number), user.uid)
+      await set(getPropertyRef(property.number), property) // Saves property data
+      await set(getPhoneListRef(property.number), user.uid) // Adds to permitted numbers
       await refreshProperties()
     } catch (err) {
       toast.add({
@@ -74,10 +85,11 @@ export function useProperties() {
     }
   }
 
+  // Function to delete a property from Firebase
   const deleteProperty = async (property) => {
-    try {
-      await remove(getPropertyRef(property.number))
-      await remove(getPhoneListRef(property.number))
+    try { 
+      await remove(getPropertyRef(property.number)) // Removes property data
+      await remove(getPhoneListRef(property.number)) // Removes from permitted numbers
       await refreshProperties()
     } catch (err) {
       toast.add({
@@ -89,8 +101,9 @@ export function useProperties() {
     }
   }
 
-  refreshProperties() //initialize properties value
+  refreshProperties() //initialize properties values on first load
 
+  // Export properties + functions, for external use
   return { properties, columns, submitProperty, refreshProperties, deleteProperty }
 
 }

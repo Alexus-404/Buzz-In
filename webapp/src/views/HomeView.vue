@@ -1,33 +1,35 @@
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { z } from 'zod'
+import { z } from "zod"
 import { useCheckIns } from "@/composables/useCheckIn"
 import { useProperties } from "@/composables/useProperties"
 import SmartTable from "@/components/SmartTable.vue"
 import SmartDialog from "@/components/SmartDialog.vue"
 
+//Composable functions for check-ins and properties
 const { queryFilters, columns, orderOptions, checkIns,
-        currentPage, totalRows, loadFirstPage, loadNextPage, loadPrevPage,
-        deleteCheckIn, editCheckIn, createCheckIn } = useCheckIns()
+  currentPage, totalRows, loadFirstPage, loadNextPage, loadPrevPage,
+  deleteCheckIn, editCheckIn, createCheckIn } = useCheckIns()
 
 const { properties } = useProperties()
 
-const GRACE_PERIOD = 2 * 60 * 60 * 1000 //able to check in 2 hours away from check in time
-const propertyOptions = ref([]) //to be populated with other properties
-const selectedProperty = ref({
-  name: "all"
-}) //default value
+//Constants and reactives
+const GRACE_PERIOD = 2 * 60 * 60 * 1000 // 2 hours grace period for check-ins
+const propertyOptions = ref([])
+const selectedProperty = ref({ name: "all" })
 const initialCheckInValue = ref({})
 const isEdit = ref(false)
 
+// Configuration for a paginator
 const paginator = ref({
-  currentPage: currentPage, //passed in from useCheckIn script
+  currentPage: currentPage,
   rows: computed(() => queryFilters.value.limit),
   totalRecords: totalRows,
   onNextPage: loadNextPage,
   onPrevPage: loadPrevPage
 })
 
+// Check-in form questions and a validation schema
 const checkInQuestions = ref([
   {
     name: "name",
@@ -35,9 +37,7 @@ const checkInQuestions = ref([
     placeholder: "Input guest name",
     type: "text",
     schema: z.string().min(1, { message: "Guest name is required!" }),
-    attributes: {
-      autofocus: true,
-    }
+    attributes: { autofocus: true }
   },
   {
     name: "property",
@@ -53,7 +53,7 @@ const checkInQuestions = ref([
     }),
     attributes: {
       options: [],
-      optionLabel: "name",
+      optionLabel: "name"
     }
   },
   {
@@ -65,11 +65,12 @@ const checkInQuestions = ref([
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
       showTime: true,
-      hourFormat: "12",
+      hourFormat: "12"
     }
-  },
+  }
 ])
 
+// Filters form questions and a validation schema
 const filterQuestions = ref([
   {
     name: "order",
@@ -90,7 +91,7 @@ const filterQuestions = ref([
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
       showTime: true,
-      hourFormat: "12",
+      hourFormat: "12"
     }
   },
   {
@@ -102,7 +103,7 @@ const filterQuestions = ref([
       minDate: new Date(Date.now() - GRACE_PERIOD),
       manualInput: false,
       showTime: true,
-      hourFormat: "12",
+      hourFormat: "12"
     }
   },
   {
@@ -113,36 +114,29 @@ const filterQuestions = ref([
       required_error: "Display limit is required.",
       invalid_type_error: "Display limit must be a number."
     }).gte(1).lte(50),
-    attributes: {
-      inputId: "integeronly",
-    }
-  },
+    attributes: { inputId: "integeronly" }
+  }
 ])
 
+// To control dialog visibilities
 const display = ref({
   checkIn: false,
-  filter: false,
+  filter: false
 })
 
-const openFilterDialog = () => {
-  display.value.filter = true
-}
+// Dialog visibility functions
+const openFilterDialog = () => display.value.filter = true
+const hideFilterDialog = () => display.value.filter = false
+const hideCheckIn = () => display.value.checkIn = false
 
-const hideFilterDialog = () => {
-  display.value.filter = false
-}
-
+// Open check-in dialog for creating / editing
 const openCheckIn = ({ data, edit }) => {
   if (edit) initialCheckInValue.value = { ...data }
   display.value.checkIn = true
-
   isEdit.value = edit
 }
 
-const hideCheckIn = () => {
-  display.value.checkIn = false
-}
-
+// Handle a check-in form submission
 const onFilterSubmit = async ({ valid, values }) => {
   if (!valid) return
   queryFilters.value = values
@@ -150,62 +144,82 @@ const onFilterSubmit = async ({ valid, values }) => {
   display.value.filter = false
 }
 
+// Update existing check-in values
 const onCheckInSubmit = ({ valid, values }) => {
   if (!valid) return
-  if (isEdit.value) editCheckIn(initialCheckInValue.value.id, values)
-  else createCheckIn(values)
+  isEdit.value ? editCheckIn(initialCheckInValue.value.id, values) : createCheckIn(values)
   display.value.checkIn = false
   isEdit.value = false
 }
 
+// Update selected property
 const updateProperty = (value) => {
-  if (value.name === "all") queryFilters.value.property = ""
-  else queryFilters.value.property = value.number
+  queryFilters.value.property = value.name === "all" ? "" : value.number
   loadFirstPage()
 }
 
-onMounted(async () => {
-  loadFirstPage()
-})
+// Load first page of check-ins upon mounting of page
+onMounted(loadFirstPage)
 
+// watches the state changes of different variables
 watch(
   () => properties.length,
   (newLength) => {
     if (newLength > 0) {
       checkInQuestions.value[1].attributes.options = properties
       propertyOptions.value = [...properties]
-      if (!propertyOptions.value.includes({ name: "all" })) {
+      if (!propertyOptions.value.find(prop => prop.name === "all")) {
         propertyOptions.value.unshift({ name: "all" })
       }
     }
   }
 )
-
 </script>
 
 <template>
-  <!-- Header -->
   <div class="w-[80%] ml-auto mr-auto mt-[5rem] flex items-center">
-    <span class="text-xl font-bold">Displaying check-ins for </span>
+    <span class="text-xl font-bold">Displaying check-ins for</span>
     <span class="text-xl font-bold px-2">
-      <Select v-on:update:model-value="updateProperty" :modelValue="selectedProperty" name="property"
-        :options="propertyOptions" option-label="name" class="w-56">
-      </Select>
+      <Select 
+        v-on:update:model-value="updateProperty" 
+        :modelValue="selectedProperty" 
+        name="property"
+        :options="propertyOptions" 
+        option-label="name" 
+        class="w-56"
+      />
     </span>
   </div>
 
-  <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <SmartTable :values="checkIns" :columns="columns" editable filterable paginated :paginator :open-form="openCheckIn"
-      :open-filter="openFilterDialog" :del="deleteCheckIn" />
+    <SmartTable 
+      :values="checkIns" 
+      :columns="columns" 
+      editable 
+      filterable 
+      paginated 
+      :paginator 
+      :open-form="openCheckIn"
+      :open-filter="openFilterDialog" 
+      :del="deleteCheckIn" 
+    />
   </div>
 
-  <!-- Check-In Dialog -->
-  <SmartDialog :onSubmit="onCheckInSubmit" :initial-values="initialCheckInValue" :questions="checkInQuestions"
-    :visible="display.checkIn" @update:visible="hideCheckIn" header="Create or Edit Check In" />
+  <SmartDialog 
+    :onSubmit="onCheckInSubmit" 
+    :initial-values="initialCheckInValue" 
+    :questions="checkInQuestions"
+    :visible="display.checkIn" 
+    @update:visible="hideCheckIn" 
+    header="Create or Edit Check In" 
+  />
 
-  <!-- Filter Check In Dialog -->
-  <SmartDialog :onSubmit="onFilterSubmit" :initial-values="queryFilters" :questions="filterQuestions"
-    :visible="display.filter" @update:visible="hideFilterDialog" header="Filters" />
-
+  <SmartDialog 
+    :onSubmit="onFilterSubmit" 
+    :initial-values="queryFilters" 
+    :questions="filterQuestions"
+    :visible="display.filter" 
+    @update:visible="hideFilterDialog" 
+    header="Filters" 
+  />
 </template>

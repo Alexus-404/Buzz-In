@@ -10,23 +10,30 @@ import {
   setPersistence
 } from "firebase/auth"
 
+//Initialize Google Auth Provider
 const provider = new GoogleAuthProvider()
 
+//Reactive error message and router instance
 const errMsg = ref()
 const router = useRouter()
 
+//Function to handle google login
 const logInWithGoogle = async () => {
   try {
+    //sets persistence to local
     await setPersistence(auth, browserLocalPersistence)
     const result = await signInWithPopup(auth, provider)
     const { isNewUser } = getAdditionalUserInfo(result)
 
+    //Register new user if they don't exist
     if (isNewUser) {
       await register(result.user)
     }
 
+    //Redirect user to homepage after successful login
     router.push("/")
   } catch (err) {
+    //Handling specific authentication error cases
     switch (err.code) {
       case "auth/invalid-email":
         errMsg.value = "Invalid email"
@@ -44,7 +51,7 @@ const logInWithGoogle = async () => {
   }
 }
 
-
+//Register a new user into Firebase
 const register = async (user) => {
   const userRef = fbRef(db, "users/" + user.uid)
   set(userRef, {
