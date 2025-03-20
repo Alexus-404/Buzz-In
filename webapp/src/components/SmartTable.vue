@@ -32,17 +32,29 @@ const {values, paginator, columns, editable, filterable, exportable, paginated, 
     },
 }) 
 
+const now = new Date().toLocaleDateString()
+
 const dataTable = ref()
 
 const exportCSV = () => {
   dataTable.value.exportCSV()
 }
 
+const formatCSV = ({data, field}) => {
+  switch (field) {
+    case 'time':
+      console.log(data.toLocaleString('en-us'))
+      return data.toLocaleString('en-us')
+    default:
+      return String(data)
+  }
+}
+
 const showMessage = computed(() => (values ?? []).length == 0);
 </script>
 
 <template>
-   <DataTable :value="values" ref="dataTable" tableStyle="min-width: 50rem" selectionMode="single" :rowClass="() => 'group'">
+   <DataTable :exportFunction="formatCSV" :exportFilename="'Logs ' + now" :value="values" ref="dataTable" tableStyle="min-width: 50rem" selectionMode="single" :rowClass="() => 'group'">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-between gap-2">
           <span class="text-xl text-900 font-bold">
