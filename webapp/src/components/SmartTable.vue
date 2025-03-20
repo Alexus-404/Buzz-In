@@ -43,7 +43,6 @@ const exportCSV = () => {
 const formatCSV = ({data, field}) => {
   switch (field) {
     case 'time':
-      console.log(data.toLocaleString('en-us'))
       return data.toLocaleString('en-us')
     default:
       return String(data)
