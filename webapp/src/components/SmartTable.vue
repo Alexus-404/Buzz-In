@@ -69,7 +69,7 @@ const showMessage = computed(() => (values ?? []).length == 0);
         <span class="flex px-4 gap-2">
           <Button icon="pi pi-plus" label="New" raised @click="openForm" v-if="editable"></Button>
           <Button icon="pi pi-filter" label="Filters" raised @click="openFilter" v-if="filterable"></Button>
-          <Button icon="pi pi-external-link" label="Export" raised @click="exportCSV" v-if="exportable"></Button>
+          <Button icon="pi pi-external-link" label="Export" raised @click="exportCSV" :v-if="exportable && !showMessage"></Button>
         </span>
       </div>
     </template>
