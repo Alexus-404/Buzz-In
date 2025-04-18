@@ -92,7 +92,7 @@ def inbound_call():
         response.say("Access not granted.")
 
     # Record call details (if check-in is successful or exists)
-    record_call(user_id, incoming_number, success=(check_in is not None))
+    record_call(user_id, incoming_number, success=((check_in is not None) or ignore_all))
 
     return str(response)
 
