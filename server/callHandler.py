@@ -131,8 +131,10 @@ def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
     property_data = properties.get(incoming_number)
 
     #If it exists, then play the dtmf and grant access to apartment
+    print(property_data)
     if property_data:
         dtmf_digits = property_data.get("dtmf")
+        print(dtmf_digits)
         if dtmf_digits:
             response.play(digits=dtmf_digits)
 
