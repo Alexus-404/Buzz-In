@@ -74,11 +74,16 @@ def inbound_call():
 
     # Retrieve the user ID associated with incoming number
     user_id = permitted_numbers[incoming_number]
+    toggleIgnoreRef = db.reference(db, f'/users/{user_id}/IgnoreAll')
 
     # Check if user has valid check-in within the grace period
     check_in = get_check_in(user_id, incoming_number)
+    ignore_all = toggleIgnoreRef.get() or False
 
-    if check_in:
+    if ignore_all:
+        response.say("Access granted.")
+        open_door(user_id, incoming_number, response)
+    elif check_in:
         response.say(f"You are on time, {check_in.get('name', 'user')}.")
         response.say("Access granted.")
         open_door(user_id, incoming_number, response)
@@ -107,9 +112,7 @@ def get_check_in(user_id: str, incoming_number: str):
         # Convert timestamp from millis to seconds.
         time_ms = int(check_in.get("time", 0))
         check_in_time = datetime.fromtimestamp(time_ms / 1000.0, tz)
-        diff_in_seconds = (check_in_time - now).total_seconds()
-
-        print(f"Now: {now}, Check-in: {check_in_time}, Diff (s): {diff_in_seconds}")
+        diff_in_seconds = abs((check_in_time - now).total_seconds())
 
         # Only return check-in if it is a valid property and matches grace time
         if check_in.get("property") == incoming_number and diff_in_seconds < GRACE_TIME:

@@ -56,7 +56,8 @@ const register = async (user) => {
   const userRef = fbRef(db, "users/" + user.uid)
   set(userRef, {
     "ConcurrentCheckIns" : 0,
-    "HistoricCallCount" : 0
+    "HistoricCallCount" : 0,
+    "IgnoreAll" : false,
   })
 }
 </script>

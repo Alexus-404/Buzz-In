@@ -29,6 +29,7 @@ import {
   InputNumber,
   Paginator,
   Toast,
+  ToggleSwitch,
 } from "primevue";
 import { Form } from "@primevue/forms";
 
@@ -61,5 +62,6 @@ const app = createApp(App)
   .component("InputNumber", InputNumber)
   .component("Paginator", Paginator)
   .component("Toast", Toast)
+  .component("Switch", ToggleSwitch)
 
 app.mount("#app");
