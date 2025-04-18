@@ -74,7 +74,7 @@ def inbound_call():
 
     # Retrieve the user ID associated with incoming number
     user_id = permitted_numbers[incoming_number]
-    toggleIgnoreRef = db.reference(db, f'/users/{user_id}/IgnoreAll')
+    toggleIgnoreRef = db.reference(f'/users/{user_id}/IgnoreAll')
 
     # Check if user has valid check-in within the grace period
     check_in = get_check_in(user_id, incoming_number)
