@@ -107,7 +107,9 @@ def get_check_in(user_id: str, incoming_number: str):
         # Convert timestamp from millis to seconds.
         time_ms = int(check_in.get("time", 0))
         check_in_time = datetime.fromtimestamp(time_ms / 1000.0, tz)
-        diff_in_seconds = (now - check_in_time).total_seconds()
+        diff_in_seconds = (check_in_time - now).total_seconds()
+
+        print(f"Now: {now}, Check-in: {check_in_time}, Diff (s): {diff_in_seconds}")
 
         # Only return check-in if it is a valid property and matches grace time
         if check_in.get("property") == incoming_number and diff_in_seconds < GRACE_TIME:
