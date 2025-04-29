@@ -137,7 +137,6 @@ def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
     if property_data:
         dtmf_digits = property_data.get("dtmf")
         if dtmf_digits:
-            print(dtmf_digits)
             response.play(digits=dtmf_digits)
 
 def increment_counter(current_value):
