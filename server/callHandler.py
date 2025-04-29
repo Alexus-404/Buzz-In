@@ -74,13 +74,12 @@ def inbound_call():
 
     # Retrieve the user ID associated with incoming number
     user_id = permitted_numbers[incoming_number]
-    toggleIgnoreRef = db.reference(f'/users/{user_id}/IgnoreAll')
 
     # Check if user has valid check-in within the grace period
     check_in = get_check_in(user_id, incoming_number)
-    ignore_all = toggleIgnoreRef.get() or False
+    is_ignore = get_ignore(user_id, incoming_number)
 
-    if ignore_all:
+    if is_ignore:
         response.say("Access granted.")
         open_door(user_id, incoming_number, response)
     elif check_in:
@@ -92,7 +91,7 @@ def inbound_call():
         response.say("Access not granted.")
 
     # Record call details (if check-in is successful or exists)
-    record_call(user_id, incoming_number, success=((check_in is not None) or ignore_all))
+    record_call(user_id, incoming_number, success=((check_in is not None) or is_ignore))
 
     return str(response)
 
@@ -120,6 +119,10 @@ def get_check_in(user_id: str, incoming_number: str):
 
     return None
 
+def get_ignore(user_id: str, incoming_number: str):
+    is_ignore = db.reference(f"/users/{user_id}/Properties/{incoming_number}").get() or False
+    return is_ignore
+
 
 def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
     """
@@ -134,6 +137,7 @@ def open_door(user_id: str, incoming_number: str, response: VoiceResponse):
     if property_data:
         dtmf_digits = property_data.get("dtmf")
         if dtmf_digits:
+            print(dtmf_digits)
             response.play(digits=dtmf_digits)
 
 def increment_counter(current_value):

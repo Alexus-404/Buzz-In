@@ -22,6 +22,7 @@ const { values, paginator, columns, editable, filterable, exportable, paginated,
   filterable: Boolean,
   exportable: Boolean,
   paginated: Boolean,
+  toggleable: Boolean,
   openForm: {
     type: Function,
   },
@@ -31,6 +32,9 @@ const { values, paginator, columns, editable, filterable, exportable, paginated,
   del: {
     type: Function,
   },
+  toggle: {
+    type: Function,
+  }
 })
 
 // Get current date-time for export filename
@@ -74,6 +78,14 @@ const showMessage = computed(() => (values ?? []).length == 0);
       </div>
     </template>
     <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header"></Column>
+
+    <Column class="w-24" v-if="toggleable" key="is_ignore" field="is_ignore" header="Security">
+      <template #body="{ data }">
+        <div class="flex justify-end">
+          <Switch v-model="data.is_ignore" @update:modelValue="(newValue) => toggle(data, newValue)" />
+        </div>
+      </template>
+    </Column>
 
     <Column class="w-24 !text-end" v-if="editable">
       <template #body="{ data }">

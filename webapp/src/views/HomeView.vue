@@ -1,7 +1,5 @@
 <script setup>
 import { ref, onMounted, watch, computed } from "vue"
-import { auth, db } from "@/firebase"
-import { set, get, ref as fbRef } from "firebase/database"
 import { z } from "zod"
 import { useCheckIns } from "@/composables/useCheckIn"
 import { useProperties } from "@/composables/useProperties"
@@ -120,19 +118,6 @@ const filterQuestions = ref([
   }
 ])
 
-const user = auth.currentUser
-const pathToUser = `users/${user.uid}`
-const togglePath = `${pathToUser}/IgnoreAll`
-const toggleRef = fbRef(db, togglePath)
-
-// Enable or disable check-ins
-const checked = ref(false)
-
-const handleToggle = async (val) => {
-  set(toggleRef, val)
-}
-
-
 // To control dialog visibilities
 const display = ref({
   checkIn: false,
@@ -175,8 +160,6 @@ const updateProperty = (value) => {
 
 // Load first page of check-ins upon mounting of page
 onMounted(async () => {
-  const snap = await get(toggleRef)
-  checked.value = snap.val() ?? false
   loadFirstPage()
 })
 
@@ -222,11 +205,6 @@ watch(
       :open-filter="openFilterDialog" 
       :del="deleteCheckIn" 
     />
-  </div>
-
-  <div class="w-[80%] ml-auto mr-auto my-[5rem]">
-    <h3> Disable Check-Ins Security </h3>
-    <Switch v-model="checked" @update:modelValue="handleToggle" />
   </div>
 
   <SmartDialog 

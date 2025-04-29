@@ -42,6 +42,7 @@ export function useProperties() {
   // Helper functions: gets firebase references
   const getPropertyRef = (pId) => fbRef(db,propertiesPath + "/" + phoneToNumber(pId))
   const getPhoneListRef = (pId) => fbRef(db, pathToPhoneList + "/" + phoneToNumber(pId))
+  const getPropertyIgnore = (pId) => fbRef(db, propertiesPath + "/" + phoneToNumber(pId) + "/is_ignore")
 
   // Function to refresh properties from firebase
   const refreshProperties = async () => {
@@ -101,9 +102,22 @@ export function useProperties() {
     }
   }
 
+  const toggleProperty = async (property, val) => {
+    try {
+      await set(getPropertyIgnore(property.number), val)
+    } catch (err) {
+      toast.add({
+        severity: "error",
+        detail: err,
+        summary: "Failed toggling property",
+        life: 3000
+      })
+    }
+  }
+
   refreshProperties() //initialize properties values on first load
 
   // Export properties + functions, for external use
-  return { properties, columns, submitProperty, refreshProperties, deleteProperty }
+  return { properties, columns, submitProperty, refreshProperties, deleteProperty, toggleProperty }
 
 }

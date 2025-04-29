@@ -9,7 +9,7 @@ import SmartTable from "@/components/SmartTable.vue"
 
 import { numberRegex } from "@/services/formats" 
 
-const { properties, columns, deleteProperty, submitProperty } = useProperties()
+const { properties, columns, deleteProperty, submitProperty, toggleProperty } = useProperties()
 const showPropertyModal = ref(false)
 
 const toast = useToast()
@@ -86,7 +86,7 @@ const onSubmitProperty = ({ valid, values }) => {
 
   <!-- Body -->
   <div class="w-[80%] ml-auto mr-auto my-[2rem]">
-    <SmartTable :values="properties" :columns="columns" editable :open-form="openProperty" :del="deleteProperty" />
+    <SmartTable :values="properties" :columns="columns" editable toggleable :open-form="openProperty" :del="deleteProperty" :toggle="toggleProperty" />
   </div>
 
   <SmartDialog :onSubmit="onSubmitProperty" :initial-values="initialPropertyValue" :questions="questions" v-model:visible="showPropertyModal" header="Property"/>
