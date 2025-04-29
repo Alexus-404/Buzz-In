@@ -120,7 +120,7 @@ def get_check_in(user_id: str, incoming_number: str):
     return None
 
 def get_ignore(user_id: str, incoming_number: str):
-    is_ignore = db.reference(f"/users/{user_id}/Properties/{incoming_number}").get() or False
+    is_ignore = db.reference(f"/users/{user_id}/Properties/{incoming_number}/is_ignore").get() or False
     return is_ignore
 
 
